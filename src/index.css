@@ -1,0 +1,457 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ghibli-inspired Design System 
+   Soft pastels, dreamy nature tones, warm and inviting */
+
+@layer base {
+    :root {
+        /* Ghibli Light Mode - Dreamy meadow vibes */
+        --background: 45 40% 97%;           /* Warm cream white */
+        --foreground: 180 25% 20%;          /* Deep forest green-gray */
+        
+        --card: 45 35% 98%;                 /* Soft cream */
+        --card-foreground: 180 25% 20%;
+        
+        --popover: 45 35% 98%;
+        --popover-foreground: 180 25% 20%;
+        
+        /* Enchanted Forest Green - Primary action */
+        --primary: 103 28% 40%;             /* Mossy green */
+        --primary-foreground: 45 40% 97%;
+        
+        /* Castle Cloud Blue - Secondary */
+        --secondary: 195 46% 85%;           /* Regent St Blue light */
+        --secondary-foreground: 180 25% 20%;
+        
+        /* Golden Meadow - Accent */
+        --accent: 37 67% 80%;               /* Sidecar cream-gold */
+        --accent-foreground: 180 25% 25%;
+        
+        --muted: 80 20% 92%;                /* Soft sage */
+        --muted-foreground: 180 15% 45%;
+        
+        /* Spirited Rose - Destructive/Delete */
+        --destructive: 351 65% 55%;
+        --destructive-foreground: 45 40% 97%;
+        
+        --border: 80 20% 85%;
+        --input: 80 20% 88%;
+        --ring: 103 28% 45%;
+        
+        /* Custom Ghibli tokens */
+        --ghibli-blue: 195 46% 73%;         /* Regent St Blue */
+        --ghibli-cream: 37 67% 85%;         /* Sidecar */
+        --ghibli-pink: 346 72% 82%;         /* Wewak pink */
+        --ghibli-green: 103 28% 45%;        /* Asparagus green */
+        --ghibli-forest: 180 39% 27%;       /* Deep forest */
+        --ghibli-sky: 200 43% 86%;          /* Whispering wind */
+        --ghibli-gold: 47 69% 65%;          /* Golden meadow */
+        
+        /* Gradients */
+        --gradient-meadow: linear-gradient(135deg, hsl(45 40% 97%), hsl(80 29% 92%), hsl(195 46% 90%));
+        --gradient-sky: linear-gradient(180deg, hsl(200 43% 92%), hsl(45 35% 98%));
+        --gradient-card: linear-gradient(145deg, hsl(45 35% 99%), hsl(80 20% 95%));
+        
+        /* Shadows */
+        --shadow-soft: 0 4px 20px -4px hsl(103 28% 40% / 0.1);
+        --shadow-card: 0 2px 12px -2px hsl(180 25% 20% / 0.08);
+        --shadow-hover: 0 8px 30px -8px hsl(103 28% 40% / 0.15);
+        --shadow-glow: 0 0 20px hsl(103 28% 45% / 0.2);
+        
+        /* Animation timing */
+        --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-bounce: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        
+        --radius: 0.75rem;
+        
+        /* Chart colors */
+        --chart-1: 103 28% 45%;
+        --chart-2: 195 46% 73%;
+        --chart-3: 37 67% 75%;
+        --chart-4: 346 72% 82%;
+        --chart-5: 47 69% 65%;
+    }
+
+    .dark {
+        /* Ghibli Dark Mode - Enchanted forest night */
+        --background: 180 20% 8%;           /* Deep forest night */
+        --foreground: 45 30% 92%;           /* Warm moonlight */
+        
+        --card: 180 18% 12%;                /* Forest shadow */
+        --card-foreground: 45 30% 92%;
+        
+        --popover: 180 18% 12%;
+        --popover-foreground: 45 30% 92%;
+        
+        /* Luminous moss green - Primary */
+        --primary: 103 35% 55%;
+        --primary-foreground: 180 20% 8%;
+        
+        /* Night sky blue - Secondary */
+        --secondary: 195 30% 25%;
+        --secondary-foreground: 45 30% 92%;
+        
+        /* Firefly gold - Accent */
+        --accent: 47 50% 35%;
+        --accent-foreground: 45 30% 92%;
+        
+        --muted: 180 15% 18%;
+        --muted-foreground: 45 20% 60%;
+        
+        --destructive: 351 50% 45%;
+        --destructive-foreground: 45 30% 92%;
+        
+        --border: 180 15% 20%;
+        --input: 180 15% 18%;
+        --ring: 103 35% 55%;
+        
+        /* Dark mode Ghibli tokens */
+        --ghibli-blue: 195 35% 40%;
+        --ghibli-cream: 37 40% 25%;
+        --ghibli-pink: 346 45% 50%;
+        --ghibli-green: 103 35% 50%;
+        --ghibli-forest: 180 30% 15%;
+        --ghibli-sky: 200 30% 30%;
+        --ghibli-gold: 47 55% 45%;
+        
+        /* Dark gradients */
+        --gradient-meadow: linear-gradient(135deg, hsl(180 20% 10%), hsl(180 18% 14%), hsl(195 25% 18%));
+        --gradient-sky: linear-gradient(180deg, hsl(200 25% 12%), hsl(180 20% 8%));
+        --gradient-card: linear-gradient(145deg, hsl(180 18% 14%), hsl(180 15% 10%));
+        
+        /* Dark shadows with glow */
+        --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.4);
+        --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+        --shadow-hover: 0 8px 30px -8px hsl(103 35% 55% / 0.2);
+        --shadow-glow: 0 0 25px hsl(103 35% 55% / 0.15);
+        
+        --chart-1: 103 35% 55%;
+        --chart-2: 195 35% 50%;
+        --chart-3: 37 50% 55%;
+        --chart-4: 346 45% 55%;
+        --chart-5: 47 55% 55%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply text-foreground antialiased;
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+    }
+
+    /* Light mode gradient background */
+    body {
+        background: linear-gradient(135deg, 
+            hsl(45 40% 97%), 
+            hsl(80 29% 92%), 
+            hsl(195 46% 90%));
+    }
+
+    /* Dark mode gradient background */
+    .dark body {
+        background: linear-gradient(135deg, 
+            hsl(180 20% 10%), 
+            hsl(180 18% 14%), 
+            hsl(195 25% 18%));
+    }
+
+    /* Code/snippet specific styling */
+    code, pre, .font-mono {
+        font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    }
+}
+
+@layer components {
+    /* Ghibli Card Variants */
+    .card-ghibli {
+        background: var(--gradient-card);
+        border: 1px solid hsl(var(--border));
+        box-shadow: var(--shadow-card);
+        transition: box-shadow var(--transition-smooth), 
+                    transform var(--transition-smooth),
+                    border-color var(--transition-smooth);
+    }
+
+    .card-ghibli:hover {
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Locked state card - clickable feel */
+    .card-locked {
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-locked::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, 
+            hsl(var(--primary) / 0.03), 
+            hsl(var(--ghibli-blue) / 0.05));
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+    }
+
+    .card-locked:hover::before {
+        opacity: 1;
+    }
+
+    .card-locked:hover {
+        border-color: hsl(var(--primary) / 0.4);
+        transform: translateY(-2px);
+    }
+
+    .card-locked:active {
+        transform: translateY(0) scale(0.99);
+    }
+
+    /* Unlocked state card - editable feel */
+    .card-unlocked {
+        border-color: hsl(var(--ghibli-gold));
+        box-shadow: var(--shadow-card), 0 0 0 2px hsl(var(--ghibli-gold) / 0.2);
+    }
+
+    /* Copy feedback animation */
+    .copy-flash {
+        animation: copyFlash 0.6s ease-out;
+    }
+
+    @keyframes copyFlash {
+        0% {
+            box-shadow: var(--shadow-card), 0 0 0 0 hsl(var(--primary) / 0.5);
+        }
+        50% {
+            box-shadow: var(--shadow-hover), 0 0 0 8px hsl(var(--primary) / 0);
+        }
+        100% {
+            box-shadow: var(--shadow-card);
+        }
+    }
+
+    /* Dragging state */
+    .card-dragging {
+        opacity: 0.9;
+        transform: scale(1.02) rotate(1deg);
+        box-shadow: var(--shadow-hover), 0 20px 40px -10px hsl(var(--foreground) / 0.15);
+        z-index: 100;
+    }
+
+    /* Drop placeholder */
+    .drop-placeholder {
+        border: 2px dashed hsl(var(--primary) / 0.4);
+        background: hsl(var(--primary) / 0.05);
+        border-radius: var(--radius);
+    }
+
+    /* Toast styling */
+    .toast-ghibli {
+        background: var(--gradient-card);
+        border: 1px solid hsl(var(--primary) / 0.3);
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Button glow effect */
+    .btn-ghibli {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-ghibli::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, 
+            hsl(var(--primary-foreground) / 0.1), 
+            transparent);
+        opacity: 0;
+        transition: opacity var(--transition-smooth);
+    }
+
+    .btn-ghibli:hover::after {
+        opacity: 1;
+    }
+
+    /* Floating particles decoration (optional) */
+    .ghibli-particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: hsl(var(--ghibli-gold) / 0.6);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) translateX(0);
+            opacity: 0.4;
+        }
+        50% {
+            transform: translateY(-20px) translateX(10px);
+            opacity: 0.8;
+        }
+    }
+
+    /* Fade in animation */
+    .fade-in {
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Slide in from bottom */
+    .slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Scale pop animation */
+    .scale-pop {
+        animation: scalePop 0.2s var(--transition-bounce);
+    }
+
+    @keyframes scalePop {
+        from {
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Code content styling */
+    .code-content {
+        white-space: pre-wrap;
+        word-break: break-word;
+        tab-size: 2;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+    }
+
+    /* Scrollbar styling */
+    .scrollbar-ghibli::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .scrollbar-ghibli::-webkit-scrollbar-track {
+        background: hsl(var(--muted) / 0.5);
+        border-radius: 3px;
+    }
+
+    .scrollbar-ghibli::-webkit-scrollbar-thumb {
+        background: hsl(var(--primary) / 0.3);
+        border-radius: 3px;
+    }
+
+    .scrollbar-ghibli::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--primary) / 0.5);
+    }
+
+    /* Focus ring styling */
+    .focus-ghibli:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px hsl(var(--background)), 
+                    0 0 0 4px hsl(var(--ring));
+    }
+}
+
+@layer utilities {
+    /* Ghibli specific utilities */
+    .bg-ghibli-blue { background-color: hsl(var(--ghibli-blue)); }
+    .bg-ghibli-cream { background-color: hsl(var(--ghibli-cream)); }
+    .bg-ghibli-pink { background-color: hsl(var(--ghibli-pink)); }
+    .bg-ghibli-green { background-color: hsl(var(--ghibli-green)); }
+    .bg-ghibli-forest { background-color: hsl(var(--ghibli-forest)); }
+    .bg-ghibli-sky { background-color: hsl(var(--ghibli-sky)); }
+    .bg-ghibli-gold { background-color: hsl(var(--ghibli-gold)); }
+
+    .text-ghibli-blue { color: hsl(var(--ghibli-blue)); }
+    .text-ghibli-cream { color: hsl(var(--ghibli-cream)); }
+    .text-ghibli-pink { color: hsl(var(--ghibli-pink)); }
+    .text-ghibli-green { color: hsl(var(--ghibli-green)); }
+    .text-ghibli-forest { color: hsl(var(--ghibli-forest)); }
+    .text-ghibli-gold { color: hsl(var(--ghibli-gold)); }
+
+    .border-ghibli-blue { border-color: hsl(var(--ghibli-blue)); }
+    .border-ghibli-cream { border-color: hsl(var(--ghibli-cream)); }
+    .border-ghibli-green { border-color: hsl(var(--ghibli-green)); }
+    .border-ghibli-gold { border-color: hsl(var(--ghibli-gold)); }
+
+    .shadow-ghibli { box-shadow: var(--shadow-soft); }
+    .shadow-ghibli-card { box-shadow: var(--shadow-card); }
+    .shadow-ghibli-hover { box-shadow: var(--shadow-hover); }
+    .shadow-ghibli-glow { box-shadow: var(--shadow-glow); }
+
+    .gradient-meadow { background: var(--gradient-meadow); }
+    .gradient-sky { background: var(--gradient-sky); }
+    .gradient-card { background: var(--gradient-card); }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit;
+        margin-right: inherit;
+        margin-top: inherit;
+        margin-bottom: inherit;
+        padding-left: inherit;
+        padding-right: inherit;
+        padding-top: inherit;
+        padding-bottom: inherit;
+        column-gap: inherit;
+        row-gap: inherit;
+        gap: inherit;
+        border-left-width: inherit;
+        border-right-width: inherit;
+        border-top-width: inherit;
+        border-bottom-width: inherit;
+        border-left-style: inherit;
+        border-right-style: inherit;
+        border-top-style: inherit;
+        border-bottom-style: inherit;
+        border-left-color: inherit;
+        border-right-color: inherit;
+        border-top-color: inherit;
+        border-bottom-color: inherit;
+    }
+}
