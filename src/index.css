@@ -49,7 +49,7 @@
         --ghibli-green: 103 28% 45%;        /* Asparagus green */
         --ghibli-forest: 180 39% 27%;       /* Deep forest */
         --ghibli-sky: 200 43% 86%;          /* Whispering wind */
-        --ghibli-gold: 47 69% 65%;          /* Golden meadow */
+        --ghibli-gold: 23 100% 50%;         /* Orange #ff6200 */
         
         /* Gradients */
         --gradient-meadow: linear-gradient(135deg, hsl(45 40% 97%), hsl(80 29% 92%), hsl(195 46% 90%));
@@ -116,7 +116,7 @@
         --ghibli-green: 103 35% 50%;
         --ghibli-forest: 180 30% 15%;
         --ghibli-sky: 200 30% 30%;
-        --ghibli-gold: 47 55% 45%;
+        --ghibli-gold: 23 100% 45%;         /* Orange #ff6200 darker */
         
         /* Dark gradients */
         --gradient-meadow: linear-gradient(135deg, hsl(180 20% 10%), hsl(180 18% 14%), hsl(195 25% 18%));

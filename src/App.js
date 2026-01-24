@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { SnippetGrid } from '@/components/SnippetGrid';
 import { Toast } from '@/components/Toast';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
@@ -44,7 +45,9 @@ function App() {
     const newSnippet = {
       id: generateId(),
       title: '',
-      content: ''
+      fields: [
+        { label: '', value: '', type: 'text' }
+      ]
     };
     setSnippets(prev => [newSnippet, ...prev]);
     
@@ -71,11 +74,11 @@ function App() {
     showToast('Snippet deleted', 'success');
   }, [setSnippets, showToast]);
 
-  // Copy snippet
+  // Copy snippet field
   const handleCopySnippet = useCallback((id) => {
     const snippet = snippets.find(s => s.id === id);
     if (snippet) {
-      showToast(`"${snippet.title || 'Snippet'}" copied!`, 'success');
+      showToast(`Copied from "${snippet.title || 'Snippet'}"`, 'success');
     }
   }, [snippets, showToast]);
 
@@ -83,6 +86,46 @@ function App() {
   const handleReorderSnippets = useCallback((newSnippets) => {
     setSnippets(newSnippets);
   }, [setSnippets]);
+
+  // Export snippets as JSON
+  const handleExport = useCallback(() => {
+    const dataStr = JSON.stringify(snippets, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pastekit-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Snippets exported!', 'success');
+  }, [snippets, showToast]);
+
+  // Reset all data to defaults
+  const handleReset = useCallback(() => {
+    setSnippets(defaultSnippets);
+    setIsEditMode(false);
+    showToast('All data reset to defaults', 'success');
+  }, [setSnippets, setIsEditMode, showToast]);
+
+  // Keyboard shortcut: Ctrl+S to save and lock
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (isEditMode) {
+          setIsEditMode(false);
+          showToast('Saved & locked!', 'success');
+        } else {
+          showToast('Already in view mode', 'success');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditMode, setIsEditMode, showToast]);
 
   // Don't render until theme is mounted to avoid flash
   if (!mounted) {
@@ -98,6 +141,8 @@ function App() {
         isDark={isDark}
         onToggleTheme={toggleTheme}
         onAddSnippet={handleAddSnippet}
+        onExport={handleExport}
+        onReset={handleReset}
         snippetCount={snippets.length}
       />
 
@@ -123,6 +168,9 @@ function App() {
                     <span className="text-muted-foreground ml-2">
                       — Edit titles, content, delete cards, or drag to reorder
                     </span>
+                    <span className="text-muted-foreground/60 ml-2 hidden sm:inline">
+                      (Ctrl+S to save & lock)
+                    </span>
                   </>
                 ) : (
                   <>
@@ -147,6 +195,77 @@ function App() {
           onReorderSnippets={handleReorderSnippets}
         />
       </main>
+
+      {/* FAQ Section */}
+      <section className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h2 className="text-lg font-semibold text-foreground mb-4">Frequently Asked Questions</h2>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="what-is">
+            <AccordionTrigger>What is PasteKit?</AccordionTrigger>
+            <AccordionContent>
+              PasteKit is a simple, fast clipboard snippet manager that runs entirely in your browser.
+              It helps you store frequently used text snippets like code snippets, API keys, commands,
+              credentials, and templates for quick one-click copying. No account needed, no server required.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="how-to-copy">
+            <AccordionTrigger>How do I copy a snippet?</AccordionTrigger>
+            <AccordionContent>
+              Simply click on any field within a snippet card to instantly copy its content to your clipboard.
+              You'll see a checkmark confirmation when the copy is successful. Make sure you're in View Mode
+              (not Edit Mode) for one-click copying to work.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="how-to-edit">
+            <AccordionTrigger>How do I add or edit snippets?</AccordionTrigger>
+            <AccordionContent>
+              Toggle the Edit Mode switch in the header. In Edit Mode, you can: add new snippets with the
+              "Add" button, edit titles and field values directly, change field types (text, password, multiline),
+              add or remove fields from each card, delete entire cards, and drag cards to reorder them.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="field-types">
+            <AccordionTrigger>What are the different field types?</AccordionTrigger>
+            <AccordionContent>
+              PasteKit supports three field types: <strong>Text</strong> for regular single-line content,
+              <strong>Password</strong> for sensitive data that stays masked until you click the eye icon,
+              and <strong>Multiline</strong> for code snippets and longer text that preserves formatting.
+              Click the field icon in Edit Mode to cycle between types.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="data-storage">
+            <AccordionTrigger>Where is my data saved?</AccordionTrigger>
+            <AccordionContent>
+              All your snippets are saved locally in your browser's localStorage. Your data never leaves
+              your device and is not sent to any server. This means your snippets are private and secure,
+              but also means they won't sync across devices automatically.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="export">
+            <AccordionTrigger>Can I export my snippets?</AccordionTrigger>
+            <AccordionContent>
+              Yes! Click the "Export" button in the header to download all your snippets as a JSON file.
+              This allows you to backup your data, transfer it to another browser, or share snippet
+              collections with others. The exported file includes all snippet titles, fields, and field types.
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="why-pastekit">
+            <AccordionTrigger>Why use PasteKit instead of a notes app?</AccordionTrigger>
+            <AccordionContent>
+              PasteKit is optimized for quick access and one-click copying. Unlike notes apps, each field
+              is independently copyable, passwords stay hidden, and the interface is designed for rapid
+              retrieval. It's perfect for developers, sysadmins, and anyone who frequently copies the same
+              text snippets throughout their day.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
 
       {/* Footer */}
       <footer className="py-4 text-center border-t border-border/50 bg-background/50 backdrop-blur-sm">

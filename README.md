@@ -4,10 +4,13 @@ A clipboard snippet manager for storing and quickly copying frequently used text
 
 ## Features
 
-- **One-click copy** - Click any snippet card to copy its content instantly
+- **One-click copy** - Click any field to copy its content instantly
+- **Multiple fields per snippet** - Each card can have multiple copyable fields
+- **Field types** - Choose between Text, Password (masked), or Multiline for each field
 - **Edit mode** - Toggle edit mode to modify, delete, or reorder snippets
 - **Drag & drop** - Reorder snippets by dragging in edit mode
-- **Local storage** - All snippets are saved in your browser
+- **Export to JSON** - Download all your snippets as a JSON file for backup
+- **Local storage** - All snippets are saved in your browser (no server needed)
 - **Dark/Light theme** - Toggle between themes
 - **Responsive** - Works on desktop and mobile
 

@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+/ref 
+
 
 # Production builds
 .next/

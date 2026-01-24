@@ -1,26 +1,58 @@
-import React from 'react';
-import { 
-  Sun, 
-  Moon, 
-  Lock, 
-  Unlock, 
-  Plus, 
+import React, { useState } from 'react';
+import {
+  Sun,
+  Moon,
+  Lock,
+  Unlock,
+  Plus,
   Clipboard,
-  Sparkles
+  Sparkles,
+  Download,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-export const Header = ({ 
-  isEditMode, 
-  onToggleEditMode, 
-  isDark, 
-  onToggleTheme, 
+export const Header = ({
+  isEditMode,
+  onToggleEditMode,
+  isDark,
+  onToggleTheme,
   onAddSnippet,
-  snippetCount 
+  onExport,
+  onReset,
+  snippetCount
 }) => {
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+
+  const handleReset = () => {
+    if (confirmText.toLowerCase() === 'delete') {
+      onReset();
+      setResetDialogOpen(false);
+      setConfirmText('');
+    }
+  };
+
+  const handleDialogClose = (open) => {
+    setResetDialogOpen(open);
+    if (!open) {
+      setConfirmText('');
+    }
+  };
+
   return (
     <TooltipProvider delayDuration={300}>
       <header className="sticky top-0 z-40 backdrop-blur-md bg-background/80 border-b border-border/50">
@@ -30,8 +62,8 @@ export const Header = ({
             <div className="flex items-center gap-3">
               <div className={cn(
                 "relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300",
-                isEditMode 
-                  ? "bg-ghibli-gold/20 shadow-ghibli-glow" 
+                isEditMode
+                  ? "bg-ghibli-gold/20 shadow-ghibli-glow"
                   : "bg-primary/10"
               )}>
                 <Clipboard className={cn(
@@ -41,7 +73,7 @@ export const Header = ({
                 {/* Decorative sparkle */}
                 <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-ghibli-gold opacity-60" />
               </div>
-              
+
               <div>
                 <h1 className="text-lg font-bold text-foreground tracking-tight">
                   PasteKit
@@ -64,7 +96,7 @@ export const Header = ({
                     className="gap-1.5"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Add Snippet</span>
+                    <span className="hidden sm:inline">Add</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -72,11 +104,82 @@ export const Header = ({
                 </TooltipContent>
               </Tooltip>
 
+              {/* Export Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghibliOutline"
+                    size="sm"
+                    onClick={onExport}
+                    className="gap-1.5"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Export</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Export snippets as JSON</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Reset Button */}
+              <Dialog open={resetDialogOpen} onOpenChange={handleDialogClose}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Reset</span>
+                      </Button>
+                    </DialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Reset all data</p>
+                  </TooltipContent>
+                </Tooltip>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Reset All Data</DialogTitle>
+                    <DialogDescription>
+                      This will permanently delete all your snippets and restore the default examples.
+                      This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <p className="text-sm text-foreground mb-2">
+                      Type <span className="font-mono font-bold text-destructive">delete</span> to confirm:
+                    </p>
+                    <Input
+                      value={confirmText}
+                      onChange={(e) => setConfirmText(e.target.value)}
+                      placeholder="Type 'delete' to confirm"
+                      className="font-mono"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => handleDialogClose(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleReset}
+                      disabled={confirmText.toLowerCase() !== 'delete'}
+                    >
+                      Reset All Data
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               {/* Edit Mode Toggle */}
               <div className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300",
-                isEditMode 
-                  ? "bg-ghibli-gold/10 border-ghibli-gold/30" 
+                isEditMode
+                  ? "bg-ghibli-gold/10 border-ghibli-gold/30"
                   : "bg-muted/50 border-border"
               )}>
                 <Tooltip>
@@ -102,7 +205,7 @@ export const Header = ({
                     <p>{isEditMode ? 'Switch to view mode (click cards to copy)' : 'Switch to edit mode (edit, delete, reorder)'}</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 <Switch
                   checked={isEditMode}
                   onCheckedChange={onToggleEditMode}
