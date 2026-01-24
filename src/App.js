@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { SnippetGrid } from '@/components/SnippetGrid';
 import { Toast } from '@/components/Toast';
@@ -24,6 +24,9 @@ function App() {
   
   // Toast state
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
+
+  // File input ref for import
+  const fileInputRef = useRef(null);
 
   // Show toast helper
   const showToast = useCallback((message, type = 'success') => {
@@ -102,6 +105,52 @@ function App() {
     showToast('Snippets exported!', 'success');
   }, [snippets, showToast]);
 
+  // Trigger file input for import
+  const handleImportClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  // Import snippets from JSON file
+  const handleImport = useCallback((event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+
+        // Validate structure
+        if (!Array.isArray(imported)) {
+          showToast('Invalid file: expected an array of snippets', 'error');
+          return;
+        }
+
+        // Validate each snippet has required fields
+        const isValid = imported.every(snippet =>
+          snippet &&
+          typeof snippet.id === 'string' &&
+          typeof snippet.title === 'string' &&
+          Array.isArray(snippet.fields)
+        );
+
+        if (!isValid) {
+          showToast('Invalid file: snippets have invalid structure', 'error');
+          return;
+        }
+
+        setSnippets(imported);
+        showToast(`Imported ${imported.length} snippet${imported.length !== 1 ? 's' : ''}!`, 'success');
+      } catch (err) {
+        showToast('Failed to parse JSON file', 'error');
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset input so same file can be imported again
+    event.target.value = '';
+  }, [setSnippets, showToast]);
+
   // Reset all data to defaults
   const handleReset = useCallback(() => {
     setSnippets(defaultSnippets);
@@ -134,6 +183,15 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,application/json"
+        onChange={handleImport}
+        className="hidden"
+      />
+
       {/* Header */}
       <Header
         isEditMode={isEditMode}
@@ -142,6 +200,7 @@ function App() {
         onToggleTheme={toggleTheme}
         onAddSnippet={handleAddSnippet}
         onExport={handleExport}
+        onImport={handleImportClick}
         onReset={handleReset}
         snippetCount={snippets.length}
       />
@@ -247,11 +306,12 @@ function App() {
           </AccordionItem>
 
           <AccordionItem value="export">
-            <AccordionTrigger>Can I export my snippets?</AccordionTrigger>
+            <AccordionTrigger>Can I export and import my snippets?</AccordionTrigger>
             <AccordionContent>
               Yes! Click the "Export" button in the header to download all your snippets as a JSON file.
               This allows you to backup your data, transfer it to another browser, or share snippet
-              collections with others. The exported file includes all snippet titles, fields, and field types.
+              collections with others. To restore or load snippets, click "Import" and select a previously
+              exported JSON file. The imported snippets will replace your current collection.
             </AccordionContent>
           </AccordionItem>
 

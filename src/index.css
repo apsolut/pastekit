@@ -200,11 +200,12 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, 
-            hsl(var(--primary) / 0.03), 
+        background: linear-gradient(135deg,
+            hsl(var(--primary) / 0.03),
             hsl(var(--ghibli-blue) / 0.05));
         opacity: 0;
         transition: opacity var(--transition-smooth);
+        pointer-events: none;
     }
 
     .card-locked:hover::before {

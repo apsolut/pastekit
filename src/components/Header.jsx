@@ -8,6 +8,7 @@ import {
   Clipboard,
   Sparkles,
   Download,
+  Upload,
   Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export const Header = ({
   onToggleTheme,
   onAddSnippet,
   onExport,
+  onImport,
   onReset,
   snippetCount
 }) => {
@@ -119,6 +121,24 @@ export const Header = ({
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p>Export snippets as JSON</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Import Button */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghibliOutline"
+                    size="sm"
+                    onClick={onImport}
+                    className="gap-1.5"
+                  >
+                    <Upload className="h-4 w-4" />
+                    <span className="hidden sm:inline">Import</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Import snippets from JSON</p>
                 </TooltipContent>
               </Tooltip>
 
