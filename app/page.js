@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { SnippetGrid } from '@/components/SnippetGrid';
@@ -7,21 +9,20 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
 import { cn } from '@/lib/utils';
-import '@/App.css';
 
 // Generate unique ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-function App() {
+export default function Home() {
   // Theme management
   const { isDark, toggleTheme, mounted } = useTheme();
-  
+
   // Snippets state with localStorage persistence
   const [snippets, setSnippets] = useLocalStorage('pastekit-snippets', defaultSnippets);
-  
+
   // Edit mode state
   const [isEditMode, setIsEditMode] = useLocalStorage('pastekit-edit-mode', false);
-  
+
   // Toast state
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
 
@@ -53,19 +54,19 @@ function App() {
       ]
     };
     setSnippets(prev => [newSnippet, ...prev]);
-    
+
     // Auto-enable edit mode when adding
     if (!isEditMode) {
       setIsEditMode(true);
     }
-    
+
     showToast('New snippet added!', 'success');
   }, [setSnippets, isEditMode, setIsEditMode, showToast]);
 
   // Update snippet
   const handleUpdateSnippet = useCallback((id, updates) => {
-    setSnippets(prev => 
-      prev.map(snippet => 
+    setSnippets(prev =>
+      prev.map(snippet =>
         snippet.id === id ? { ...snippet, ...updates } : snippet
       )
     );
@@ -210,8 +211,8 @@ function App() {
         {/* Mode Indicator Banner */}
         <div className={cn(
           "mb-6 px-4 py-3 rounded-xl border transition-all duration-300",
-          isEditMode 
-            ? "bg-ghibli-gold/5 border-ghibli-gold/20" 
+          isEditMode
+            ? "bg-ghibli-gold/5 border-ghibli-gold/20"
             : "bg-primary/5 border-primary/10"
         )}>
           <div className="flex items-center justify-between">
@@ -272,7 +273,7 @@ function App() {
             <AccordionTrigger>How do I copy a snippet?</AccordionTrigger>
             <AccordionContent>
               Simply click on any field within a snippet card to instantly copy its content to your clipboard.
-              You'll see a checkmark confirmation when the copy is successful. Make sure you're in View Mode
+              You&apos;ll see a checkmark confirmation when the copy is successful. Make sure you&apos;re in View Mode
               (not Edit Mode) for one-click copying to work.
             </AccordionContent>
           </AccordionItem>
@@ -281,7 +282,7 @@ function App() {
             <AccordionTrigger>How do I add or edit snippets?</AccordionTrigger>
             <AccordionContent>
               Toggle the Edit Mode switch in the header. In Edit Mode, you can: add new snippets with the
-              "Add" button, edit titles and field values directly, change field types (text, password, multiline),
+              &quot;Add&quot; button, edit titles and field values directly, change field types (text, password, multiline),
               add or remove fields from each card, delete entire cards, and drag cards to reorder them.
             </AccordionContent>
           </AccordionItem>
@@ -299,18 +300,18 @@ function App() {
           <AccordionItem value="data-storage">
             <AccordionTrigger>Where is my data saved?</AccordionTrigger>
             <AccordionContent>
-              All your snippets are saved locally in your browser's localStorage. Your data never leaves
+              All your snippets are saved locally in your browser&apos;s localStorage. Your data never leaves
               your device and is not sent to any server. This means your snippets are private and secure,
-              but also means they won't sync across devices automatically.
+              but also means they won&apos;t sync across devices automatically.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="export">
             <AccordionTrigger>Can I export and import my snippets?</AccordionTrigger>
             <AccordionContent>
-              Yes! Click the "Export" button in the header to download all your snippets as a JSON file.
+              Yes! Click the &quot;Export&quot; button in the header to download all your snippets as a JSON file.
               This allows you to backup your data, transfer it to another browser, or share snippet
-              collections with others. To restore or load snippets, click "Import" and select a previously
+              collections with others. To restore or load snippets, click &quot;Import&quot; and select a previously
               exported JSON file. The imported snippets will replace your current collection.
             </AccordionContent>
           </AccordionItem>
@@ -320,7 +321,7 @@ function App() {
             <AccordionContent>
               PasteKit is optimized for quick access and one-click copying. Unlike notes apps, each field
               is independently copyable, passwords stay hidden, and the interface is designed for rapid
-              retrieval. It's perfect for developers, sysadmins, and anyone who frequently copies the same
+              retrieval. It&apos;s perfect for developers, sysadmins, and anyone who frequently copies the same
               text snippets throughout their day.
             </AccordionContent>
           </AccordionItem>
@@ -347,5 +348,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {
   DndContext,
@@ -26,7 +28,7 @@ export const SnippetGrid = ({
   onReorderSnippets,
 }) => {
   const [activeId, setActiveId] = React.useState(null);
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -49,7 +51,7 @@ export const SnippetGrid = ({
     if (over && active.id !== over.id) {
       const oldIndex = snippets.findIndex((s) => s.id === active.id);
       const newIndex = snippets.findIndex((s) => s.id === over.id);
-      
+
       const newSnippets = arrayMove(snippets, oldIndex, newIndex);
       onReorderSnippets(newSnippets);
     }

@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useEffect, useState, useRef } from 'react';
-import { Check, Copy, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const Toast = ({ message, type = 'success', isVisible, onClose, duration = 2000 }) => {
@@ -21,7 +23,7 @@ export const Toast = ({ message, type = 'success', isVisible, onClose, duration 
         setIsLeaving(true);
         setTimeout(onClose, 200);
       }, duration);
-      
+
       return () => clearTimeout(timer);
     }
   }, [isVisible, duration, onClose]);

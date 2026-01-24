@@ -1,27 +1,19 @@
 # TODO
 
-## Migrate to Next.js
+## Migrate to Next.js - COMPLETED
 
-**Priority:** Medium
-**Complexity:** Moderate (30-60 min)
+**Status:** Done
 
-### Why migrate?
-- Fix remaining security vulnerabilities locked in react-scripts
-- Create React App is deprecated and no longer maintained
-- Better performance with Next.js optimizations
-- Modern tooling and active development
+### What was done:
+- [x] Set up new Next.js 15 project with App Router
+- [x] Move components with `"use client"` directive
+- [x] Update Tailwind config for Next.js paths
+- [x] Update import paths (jsconfig.json)
+- [x] Remove CRA/craco dependencies
+- [x] Configure static export for deployment
+- [x] Set dev server to port 4200
 
-### What needs to change:
-- [ ] Set up new Next.js project with App Router
-- [ ] Move components (mostly copy-paste)
-- [ ] Add `"use client"` directive to components using hooks/browser APIs
-- [ ] Remove react-router-dom (not needed for single page)
-- [ ] Update Tailwind config for Next.js
-- [ ] Update import paths
-
-### What stays the same:
-- All UI components
-- Radix UI / shadcn components
-- Tailwind styles
-- @dnd-kit drag and drop
-- localStorage logic
+### Benefits achieved:
+- Zero security vulnerabilities (was 17 with react-scripts)
+- Modern Next.js 15 with React 19
+- Faster builds and better developer experience

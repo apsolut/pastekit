@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ghibli-inspired Design System 
+/* Ghibli-inspired Design System
    Soft pastels, dreamy nature tones, warm and inviting */
 
 @layer base {
@@ -12,36 +12,36 @@
         /* Ghibli Light Mode - Dreamy meadow vibes */
         --background: 45 40% 97%;           /* Warm cream white */
         --foreground: 180 25% 20%;          /* Deep forest green-gray */
-        
+
         --card: 45 35% 98%;                 /* Soft cream */
         --card-foreground: 180 25% 20%;
-        
+
         --popover: 45 35% 98%;
         --popover-foreground: 180 25% 20%;
-        
+
         /* Enchanted Forest Green - Primary action */
         --primary: 103 28% 40%;             /* Mossy green */
         --primary-foreground: 45 40% 97%;
-        
+
         /* Castle Cloud Blue - Secondary */
         --secondary: 195 46% 85%;           /* Regent St Blue light */
         --secondary-foreground: 180 25% 20%;
-        
+
         /* Golden Meadow - Accent */
         --accent: 37 67% 80%;               /* Sidecar cream-gold */
         --accent-foreground: 180 25% 25%;
-        
+
         --muted: 80 20% 92%;                /* Soft sage */
         --muted-foreground: 180 15% 45%;
-        
+
         /* Spirited Rose - Destructive/Delete */
         --destructive: 351 65% 55%;
         --destructive-foreground: 45 40% 97%;
-        
+
         --border: 80 20% 85%;
         --input: 80 20% 88%;
         --ring: 103 28% 45%;
-        
+
         /* Custom Ghibli tokens */
         --ghibli-blue: 195 46% 73%;         /* Regent St Blue */
         --ghibli-cream: 37 67% 85%;         /* Sidecar */
@@ -50,24 +50,24 @@
         --ghibli-forest: 180 39% 27%;       /* Deep forest */
         --ghibli-sky: 200 43% 86%;          /* Whispering wind */
         --ghibli-gold: 23 100% 50%;         /* Orange #ff6200 */
-        
+
         /* Gradients */
         --gradient-meadow: linear-gradient(135deg, hsl(45 40% 97%), hsl(80 29% 92%), hsl(195 46% 90%));
         --gradient-sky: linear-gradient(180deg, hsl(200 43% 92%), hsl(45 35% 98%));
         --gradient-card: linear-gradient(145deg, hsl(45 35% 99%), hsl(80 20% 95%));
-        
+
         /* Shadows */
         --shadow-soft: 0 4px 20px -4px hsl(103 28% 40% / 0.1);
         --shadow-card: 0 2px 12px -2px hsl(180 25% 20% / 0.08);
         --shadow-hover: 0 8px 30px -8px hsl(103 28% 40% / 0.15);
         --shadow-glow: 0 0 20px hsl(103 28% 45% / 0.2);
-        
+
         /* Animation timing */
         --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         --transition-bounce: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        
+
         --radius: 0.75rem;
-        
+
         /* Chart colors */
         --chart-1: 103 28% 45%;
         --chart-2: 195 46% 73%;
@@ -80,35 +80,35 @@
         /* Ghibli Dark Mode - Enchanted forest night */
         --background: 180 20% 8%;           /* Deep forest night */
         --foreground: 45 30% 92%;           /* Warm moonlight */
-        
+
         --card: 180 18% 12%;                /* Forest shadow */
         --card-foreground: 45 30% 92%;
-        
+
         --popover: 180 18% 12%;
         --popover-foreground: 45 30% 92%;
-        
+
         /* Luminous moss green - Primary */
         --primary: 103 35% 55%;
         --primary-foreground: 180 20% 8%;
-        
+
         /* Night sky blue - Secondary */
         --secondary: 195 30% 25%;
         --secondary-foreground: 45 30% 92%;
-        
+
         /* Firefly gold - Accent */
         --accent: 47 50% 35%;
         --accent-foreground: 45 30% 92%;
-        
+
         --muted: 180 15% 18%;
         --muted-foreground: 45 20% 60%;
-        
+
         --destructive: 351 50% 45%;
         --destructive-foreground: 45 30% 92%;
-        
+
         --border: 180 15% 20%;
         --input: 180 15% 18%;
         --ring: 103 35% 55%;
-        
+
         /* Dark mode Ghibli tokens */
         --ghibli-blue: 195 35% 40%;
         --ghibli-cream: 37 40% 25%;
@@ -117,18 +117,18 @@
         --ghibli-forest: 180 30% 15%;
         --ghibli-sky: 200 30% 30%;
         --ghibli-gold: 23 100% 45%;         /* Orange #ff6200 darker */
-        
+
         /* Dark gradients */
         --gradient-meadow: linear-gradient(135deg, hsl(180 20% 10%), hsl(180 18% 14%), hsl(195 25% 18%));
         --gradient-sky: linear-gradient(180deg, hsl(200 25% 12%), hsl(180 20% 8%));
         --gradient-card: linear-gradient(145deg, hsl(180 18% 14%), hsl(180 15% 10%));
-        
+
         /* Dark shadows with glow */
         --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.4);
         --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
         --shadow-hover: 0 8px 30px -8px hsl(103 35% 55% / 0.2);
         --shadow-glow: 0 0 25px hsl(103 35% 55% / 0.15);
-        
+
         --chart-1: 103 35% 55%;
         --chart-2: 195 35% 50%;
         --chart-3: 37 50% 55%;
@@ -150,27 +150,47 @@
         @apply text-foreground antialiased;
         font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
         min-height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
 
     /* Light mode gradient background */
     body {
-        background: linear-gradient(135deg, 
-            hsl(45 40% 97%), 
-            hsl(80 29% 92%), 
+        background: linear-gradient(135deg,
+            hsl(45 40% 97%),
+            hsl(80 29% 92%),
             hsl(195 46% 90%));
     }
 
     /* Dark mode gradient background */
     .dark body {
-        background: linear-gradient(135deg, 
-            hsl(180 20% 10%), 
-            hsl(180 18% 14%), 
+        background: linear-gradient(135deg,
+            hsl(180 20% 10%),
+            hsl(180 18% 14%),
             hsl(195 25% 18%));
     }
 
     /* Code/snippet specific styling */
     code, pre, .font-mono {
         font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    }
+
+    /* Remove default link styles if needed */
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* Focus visible for keyboard navigation */
+    *:focus-visible {
+        outline: 2px solid hsl(var(--ring));
+        outline-offset: 2px;
+    }
+
+    /* Selection styling with Ghibli colors */
+    ::selection {
+        background: hsl(var(--primary) / 0.2);
+        color: hsl(var(--foreground));
     }
 }
 
@@ -180,7 +200,7 @@
         background: var(--gradient-card);
         border: 1px solid hsl(var(--border));
         box-shadow: var(--shadow-card);
-        transition: box-shadow var(--transition-smooth), 
+        transition: box-shadow var(--transition-smooth),
                     transform var(--transition-smooth),
                     border-color var(--transition-smooth);
     }
@@ -276,8 +296,8 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, 
-            hsl(var(--primary-foreground) / 0.1), 
+        background: linear-gradient(135deg,
+            hsl(var(--primary-foreground) / 0.1),
             transparent);
         opacity: 0;
         transition: opacity var(--transition-smooth);
@@ -388,7 +408,7 @@
     /* Focus ring styling */
     .focus-ghibli:focus-visible {
         outline: none;
-        box-shadow: 0 0 0 2px hsl(var(--background)), 
+        box-shadow: 0 0 0 2px hsl(var(--background)),
                     0 0 0 4px hsl(var(--ring));
     }
 }
@@ -425,34 +445,9 @@
     .gradient-card { background: var(--gradient-card); }
 }
 
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
-
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
