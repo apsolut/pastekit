@@ -224,8 +224,9 @@ function HomeContent() {
       await encryption.saveEncrypted(defaultSnippets);
     }
     setSnippets(defaultSnippets);
-    setIsEditMode(false);
-    showToast('All data reset to defaults', 'success');
+    // Enable edit mode so user can immediately customize/delete defaults
+    setIsEditMode(true);
+    showToast('All data reset to defaults - Edit Mode enabled', 'success');
   }, [setSnippets, setIsEditMode, showToast, encryption]);
 
   // Handle encryption button click
