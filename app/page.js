@@ -1,10 +1,18 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { X, AlertTriangle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { SnippetGrid } from '@/components/SnippetGrid';
 import { Toast } from '@/components/Toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  EncryptionSetupModal,
+  EncryptionUnlockModal,
+  DisableEncryptionModal,
+  ChangePasswordModal
+} from '@/components/EncryptionModal';
+import { EncryptionProvider, useEncryption } from '@/contexts/EncryptionContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
@@ -13,9 +21,12 @@ import { cn } from '@/lib/utils';
 // Generate unique ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-export default function Home() {
+function HomeContent() {
   // Theme management
   const { isDark, toggleTheme, mounted } = useTheme();
+
+  // Encryption context
+  const encryption = useEncryption();
 
   // Snippets state with localStorage persistence
   const [snippets, setSnippets] = useLocalStorage('pastekit-snippets', defaultSnippets);
@@ -23,11 +34,50 @@ export default function Home() {
   // Edit mode state
   const [isEditMode, setIsEditMode] = useLocalStorage('pastekit-edit-mode', false);
 
+  // Security warning dismissed state
+  const [warningDismissed, setWarningDismissed] = useLocalStorage('pastekit-security-warning-dismissed', false);
+
   // Toast state
   const [toast, setToast] = useState({ isVisible: false, message: '', type: 'success' });
 
+  // Encryption modal states
+  const [setupModalOpen, setSetupModalOpen] = useState(false);
+  const [disableModalOpen, setDisableModalOpen] = useState(false);
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+
   // File input ref for import
   const fileInputRef = useRef(null);
+
+  // Track if we've loaded encrypted data this session (prevents save before load)
+  const [encryptedDataLoaded, setEncryptedDataLoaded] = useState(false);
+
+  // Load encrypted snippets when unlocked
+  useEffect(() => {
+    const loadEncryptedData = async () => {
+      if (encryption.isEnabled && encryption.isUnlocked && !encryptedDataLoaded) {
+        const result = await encryption.loadEncrypted();
+        if (result.success && result.snippets) {
+          setSnippets(result.snippets);
+        }
+        setEncryptedDataLoaded(true);
+      }
+    };
+    loadEncryptedData();
+  }, [encryption.isEnabled, encryption.isUnlocked, encryptedDataLoaded, encryption.loadEncrypted, setSnippets]);
+
+  // Reset loaded flag when locked
+  useEffect(() => {
+    if (!encryption.isUnlocked) {
+      setEncryptedDataLoaded(false);
+    }
+  }, [encryption.isUnlocked]);
+
+  // Save encrypted snippets when they change (only after initial load)
+  useEffect(() => {
+    if (encryption.isEnabled && encryption.isUnlocked && encryptedDataLoaded && snippets && snippets.length > 0) {
+      encryption.saveEncrypted(snippets);
+    }
+  }, [snippets, encryption.isEnabled, encryption.isUnlocked, encryptedDataLoaded, encryption.saveEncrypted]);
 
   // Show toast helper
   const showToast = useCallback((message, type = 'success') => {
@@ -127,16 +177,31 @@ export default function Home() {
           return;
         }
 
-        // Validate each snippet has required fields
-        const isValid = imported.every(snippet =>
-          snippet &&
-          typeof snippet.id === 'string' &&
-          typeof snippet.title === 'string' &&
-          Array.isArray(snippet.fields)
-        );
+        // Validate each snippet has required fields and valid structure
+        const isValid = imported.every(snippet => {
+          if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
+            return false;
+          }
+          if (!Array.isArray(snippet.fields)) {
+            return false;
+          }
+          // Validate each field has required properties
+          return snippet.fields.every(field =>
+            field &&
+            typeof field.label === 'string' &&
+            typeof field.value === 'string' &&
+            ['text', 'password', 'rich'].includes(field.type)
+          );
+        });
 
         if (!isValid) {
           showToast('Invalid file: snippets have invalid structure', 'error');
+          return;
+        }
+
+        // Sanitize: limit reasonable sizes to prevent DoS
+        if (imported.length > 1000) {
+          showToast('Too many snippets (max 1000)', 'error');
           return;
         }
 
@@ -153,15 +218,84 @@ export default function Home() {
   }, [setSnippets, showToast]);
 
   // Reset all data to defaults
-  const handleReset = useCallback(() => {
+  const handleReset = useCallback(async () => {
+    // If encryption is enabled, we need to save the default snippets encrypted
+    if (encryption.isEnabled && encryption.isUnlocked) {
+      await encryption.saveEncrypted(defaultSnippets);
+    }
     setSnippets(defaultSnippets);
     setIsEditMode(false);
     showToast('All data reset to defaults', 'success');
-  }, [setSnippets, setIsEditMode, showToast]);
+  }, [setSnippets, setIsEditMode, showToast, encryption]);
 
-  // Keyboard shortcut: Ctrl+S to save and lock
+  // Handle encryption button click
+  const handleEncryptionClick = useCallback(() => {
+    if (!encryption.isEnabled) {
+      setSetupModalOpen(true);
+    } else if (encryption.isUnlocked) {
+      // Show options - for simplicity, toggle disable modal
+      // In a fuller implementation, could show a menu with options
+      setDisableModalOpen(true);
+    }
+  }, [encryption.isEnabled, encryption.isUnlocked]);
+
+  // Setup encryption
+  const handleSetupEncryption = useCallback(async (password) => {
+    const result = await encryption.enableEncryption(password, snippets);
+    if (result.success) {
+      showToast('Encryption enabled!', 'success');
+      setWarningDismissed(true);
+    }
+    return result;
+  }, [encryption, snippets, showToast, setWarningDismissed]);
+
+  // Unlock encryption
+  const handleUnlock = useCallback(async (password) => {
+    const result = await encryption.unlock(password);
+    if (result.success) {
+      showToast('Unlocked!', 'success');
+    }
+    return result;
+  }, [encryption, showToast]);
+
+  // Disable encryption
+  const handleDisableEncryption = useCallback(async (password) => {
+    const result = await encryption.disableEncryption(password, snippets);
+    if (result.success) {
+      showToast('Encryption disabled', 'success');
+    }
+    return result;
+  }, [encryption, snippets, showToast]);
+
+  // Change password
+  const handleChangePassword = useCallback(async (oldPassword, newPassword) => {
+    const result = await encryption.changePassword(oldPassword, newPassword, snippets);
+    if (result.success) {
+      showToast('Password changed!', 'success');
+    }
+    return result;
+  }, [encryption, snippets, showToast]);
+
+  // Dismiss security warning
+  const handleDismissWarning = useCallback(() => {
+    setWarningDismissed(true);
+  }, [setWarningDismissed]);
+
+  // Lock encryption and clear data from memory
+  const handleLock = useCallback(() => {
+    // Lock encryption first (clears password from memory)
+    encryption.lock();
+    // Clear snippets from React state (memory) - use internal setState to avoid localStorage write
+    // The useLocalStorage hook will be bypassed since encryption.isEnabled is true
+    // and we're about to show the unlock modal anyway
+    setSnippets([]);
+    showToast('Locked - data cleared from memory', 'success');
+  }, [setSnippets, encryption, showToast]);
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Ctrl+S to save and exit edit mode
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         if (isEditMode) {
@@ -171,15 +305,34 @@ export default function Home() {
           showToast('Already in view mode', 'success');
         }
       }
+      // Ctrl+L to lock encryption (clear from memory)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+        if (encryption.isEnabled && encryption.isUnlocked) {
+          e.preventDefault();
+          handleLock();
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isEditMode, setIsEditMode, showToast]);
+  }, [isEditMode, setIsEditMode, showToast, encryption.isEnabled, encryption.isUnlocked, handleLock]);
 
   // Don't render until theme is mounted to avoid flash
-  if (!mounted) {
+  if (!mounted || encryption.isLoading) {
     return null;
+  }
+
+  // Show unlock modal if encryption is enabled but not unlocked
+  if (encryption.isEnabled && !encryption.isUnlocked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <EncryptionUnlockModal
+          open={true}
+          onUnlock={handleUnlock}
+        />
+      </div>
+    );
   }
 
   return (
@@ -204,6 +357,10 @@ export default function Home() {
         onImport={handleImportClick}
         onReset={handleReset}
         snippetCount={snippets.length}
+        encryptionEnabled={encryption.isEnabled}
+        encryptionUnlocked={encryption.isUnlocked}
+        onEncryptionClick={handleEncryptionClick}
+        onLock={handleLock}
       />
 
       {/* Main Content */}
@@ -306,6 +463,33 @@ export default function Home() {
             </AccordionContent>
           </AccordionItem>
 
+          <AccordionItem value="security">
+            <AccordionTrigger>Is my data secure?</AccordionTrigger>
+            <AccordionContent>
+              <p className="mb-3">
+                By default, your data is stored in plain text in your browser&apos;s localStorage. You can enable
+                encryption by clicking the shield icon in the header, which encrypts your data with a master
+                password using strong cryptography (XSalsa20-Poly1305).
+              </p>
+              <p className="mb-3">
+                <strong>What encryption protects against:</strong> Someone copying your browser profile or
+                localStorage files, backup extraction, and casual snooping. When locked, your data is unreadable
+                without the password.
+              </p>
+              <p className="mb-3">
+                <strong>What encryption does NOT protect against:</strong> Active malware running while the app
+                is unlocked, keyloggers, malicious browser extensions, or screen capture software. When you unlock
+                PasteKit, the decrypted data exists in browser memory and can be accessed by malicious software.
+              </p>
+              <p className="font-medium text-amber-600 dark:text-amber-400">
+                Do not store real passwords, banking credentials, or production API keys here. For critical
+                secrets, use a dedicated password manager like Bitwarden or 1Password that offers secure memory
+                handling and process isolation. PasteKit is designed for convenience snippets, not as a
+                security vault.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="export">
             <AccordionTrigger>Can I export and import my snippets?</AccordionTrigger>
             <AccordionContent>
@@ -328,10 +512,47 @@ export default function Home() {
         </Accordion>
       </section>
 
+      {/* Security Warning Banner - shown at bottom on first visit */}
+      {!warningDismissed && !encryption.isEnabled && (
+        <section className="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+          <div className="px-4 py-3 rounded-xl border bg-amber-500/10 border-amber-500/20">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                    Security Notice
+                  </p>
+                  <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-0.5">
+                    PasteKit is for convenience snippets, not a password vault. Do not store real passwords or
+                    banking credentials here - use a dedicated password manager instead.
+                    <button
+                      onClick={() => setSetupModalOpen(true)}
+                      className="ml-1 underline hover:no-underline"
+                    >
+                      Enable encryption
+                    </button>
+                    {' '}for basic protection of your snippets.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleDismissWarning}
+                className="text-amber-500 hover:text-amber-600 dark:hover:text-amber-300 p-1 rounded"
+                aria-label="Dismiss warning"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Footer */}
       <footer className="py-4 text-center border-t border-border/50 bg-background/50 backdrop-blur-sm">
         <p className="text-xs text-muted-foreground">
           Your snippets are saved locally in your browser
+          {encryption.isEnabled && ' (encrypted)'}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
           by <a href="https://apsolut.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">AP</a>
@@ -345,6 +566,33 @@ export default function Home() {
         isVisible={toast.isVisible}
         onClose={hideToast}
       />
+
+      {/* Encryption Modals */}
+      <EncryptionSetupModal
+        open={setupModalOpen}
+        onClose={() => setSetupModalOpen(false)}
+        onSetup={handleSetupEncryption}
+      />
+
+      <DisableEncryptionModal
+        open={disableModalOpen}
+        onClose={() => setDisableModalOpen(false)}
+        onDisable={handleDisableEncryption}
+      />
+
+      <ChangePasswordModal
+        open={changePasswordModalOpen}
+        onClose={() => setChangePasswordModalOpen(false)}
+        onChange={handleChangePassword}
+      />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <EncryptionProvider>
+      <HomeContent />
+    </EncryptionProvider>
   );
 }

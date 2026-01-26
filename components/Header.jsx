@@ -11,7 +11,11 @@ import {
   Sparkles,
   Download,
   Upload,
-  Trash2
+  Trash2,
+  Shield,
+  ShieldCheck,
+  Menu,
+  MoreVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -26,6 +30,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 export const Header = ({
@@ -37,7 +48,11 @@ export const Header = ({
   onExport,
   onImport,
   onReset,
-  snippetCount
+  snippetCount,
+  encryptionEnabled,
+  encryptionUnlocked,
+  onEncryptionClick,
+  onLock
 }) => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
@@ -108,61 +123,39 @@ export const Header = ({
                 </TooltipContent>
               </Tooltip>
 
-              {/* Export Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghibliOutline"
-                    size="sm"
-                    onClick={onExport}
-                    className="gap-1.5"
-                  >
-                    <Download className="h-4 w-4" />
-                    <span className="hidden sm:inline">Export</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Export snippets as JSON</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Import Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghibliOutline"
-                    size="sm"
-                    onClick={onImport}
-                    className="gap-1.5"
-                  >
-                    <Upload className="h-4 w-4" />
-                    <span className="hidden sm:inline">Import</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Import snippets from JSON</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {/* Reset Button */}
+              {/* Menu for Export, Import, Reset */}
               <Dialog open={resetDialogOpen} onOpenChange={handleDialogClose}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghibliOutline" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>More options</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={onExport} className="cursor-pointer">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export {!encryptionEnabled && '(unencrypted)'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onImport} className="cursor-pointer">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="hidden sm:inline">Reset</span>
-                      </Button>
+                      <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Reset All Data
+                      </DropdownMenuItem>
                     </DialogTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>Reset all data</p>
-                  </TooltipContent>
-                </Tooltip>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Reset All Data</DialogTitle>
@@ -196,6 +189,59 @@ export const Header = ({
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
+              {/* Encryption Toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghibliOutline"
+                    size="icon"
+                    onClick={onEncryptionClick}
+                    className={cn(
+                      "relative",
+                      encryptionEnabled && encryptionUnlocked && "border-primary/50 bg-primary/5"
+                    )}
+                  >
+                    {encryptionEnabled ? (
+                      encryptionUnlocked ? (
+                        <ShieldCheck className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Shield className="h-4 w-4 text-amber-500" />
+                      )
+                    ) : (
+                      <Shield className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>
+                    {encryptionEnabled
+                      ? encryptionUnlocked
+                        ? 'Encryption settings'
+                        : 'Encryption locked'
+                      : 'Enable encryption'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* Lock Button - only shown when encryption is enabled and unlocked */}
+              {encryptionEnabled && encryptionUnlocked && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghibliOutline"
+                      size="icon"
+                      onClick={onLock}
+                      className="text-amber-500 hover:text-amber-600 hover:border-amber-500/50 hover:bg-amber-500/10"
+                    >
+                      <Lock className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Lock now (clear from memory)</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
 
               {/* Edit Mode Toggle */}
               <div className={cn(

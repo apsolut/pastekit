@@ -70,7 +70,7 @@ Be specific with line numbers and provide code examples for suggested changes.`,
     fields: [
       { label: 'Host', value: 'db.example.com:5432', type: 'text' },
       { label: 'Username', value: 'admin', type: 'text' },
-      { label: 'Password', value: 'super_secret_123', type: 'password' }
+      { label: 'Password', value: 'your-password-here', type: 'password' }
     ]
   },
   {
@@ -79,7 +79,7 @@ Be specific with line numbers and provide code examples for suggested changes.`,
     fields: [
       { label: 'URL', value: 'https://api.example.com/users', type: 'text' },
       { label: 'Method', value: 'POST', type: 'text' },
-      { label: 'Headers', value: 'Content-Type: application/json\nAuthorization: Bearer token', type: 'rich' }
+      { label: 'Headers', value: 'Content-Type: application/json\nAuthorization: Bearer your-token-here', type: 'rich' }
     ]
   }
 ];
