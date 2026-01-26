@@ -5,7 +5,6 @@ export const metadata = {
   title: 'PasteKit',
   description: 'PasteKit - Clipboard snippet manager by Aleksandar Perisic',
   authors: [{ name: 'Aleksandar Perisic' }],
-  themeColor: '#5a834a',
   openGraph: {
     type: 'website',
     title: 'PasteKit',
@@ -21,6 +20,10 @@ export const metadata = {
   icons: {
     icon: '/favicon.svg',
   },
+};
+
+export const viewport = {
+  themeColor: '#5a834a',
 };
 
 export default function RootLayout({ children }) {
