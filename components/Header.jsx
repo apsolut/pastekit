@@ -142,10 +142,10 @@ export const Header = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghibli"
+                      variant="destructive"
                       size="sm"
                       onClick={onSave}
-                      className="gap-1.5 bg-primary hover:bg-primary/90"
+                      className="gap-1.5"
                     >
                       <Save className="h-4 w-4" />
                       <span className="hidden sm:inline">Save</span>
