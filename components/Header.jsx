@@ -15,7 +15,8 @@ import {
   Shield,
   ShieldCheck,
   Menu,
-  MoreVertical
+  MoreVertical,
+  Save
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -42,6 +43,7 @@ import { cn } from '@/lib/utils';
 export const Header = ({
   isEditMode,
   onToggleEditMode,
+  onSave,
   isDark,
   onToggleTheme,
   onAddSnippet,
@@ -134,6 +136,26 @@ export const Header = ({
                   <p>Add new snippet</p>
                 </TooltipContent>
               </Tooltip>
+
+              {/* Save Button - only shown in edit mode */}
+              {isEditMode && onSave && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghibli"
+                      size="sm"
+                      onClick={onSave}
+                      className="gap-1.5 bg-primary hover:bg-primary/90"
+                    >
+                      <Save className="h-4 w-4" />
+                      <span className="hidden sm:inline">Save</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Save and exit edit mode (Ctrl+S)</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
 
               {/* Menu for Export, Import, Reset */}
               <Dialog open={resetDialogOpen} onOpenChange={handleDialogClose}>

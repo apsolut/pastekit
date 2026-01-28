@@ -382,6 +382,14 @@ function HomeContent() {
     }
   }, [switchProject, projects, showToast]);
 
+  // Save and exit edit mode
+  const handleSave = useCallback(() => {
+    if (isEditMode) {
+      setIsEditMode(false);
+      showToast('Saved & locked!', 'success');
+    }
+  }, [isEditMode, setIsEditMode, showToast]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -440,6 +448,7 @@ function HomeContent() {
       <Header
         isEditMode={isEditMode}
         onToggleEditMode={handleToggleEditMode}
+        onSave={handleSave}
         isDark={isDark}
         onToggleTheme={toggleTheme}
         onAddSnippet={handleAddSnippet}
