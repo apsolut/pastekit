@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import {
   encryptSnippets,
   decryptSnippets,
+  encryptProjects,
+  decryptProjects,
   createPasswordHash,
   verifyPassword,
   isEncrypted
@@ -12,7 +14,9 @@ import {
 const STORAGE_KEYS = {
   ENABLED: 'pastekit-encryption-enabled',
   PASSWORD_HASH: 'pastekit-password-hash',
-  ENCRYPTED_DATA: 'pastekit-encrypted-snippets'
+  ENCRYPTED_DATA: 'pastekit-encrypted-projects',
+  // Legacy key for migration
+  LEGACY_ENCRYPTED_DATA: 'pastekit-encrypted-snippets'
 };
 
 const EncryptionContext = createContext(null);
@@ -34,21 +38,23 @@ export function EncryptionProvider({ children }) {
   }, []);
 
   // Enable encryption with a new password
-  const enableEncryption = useCallback(async (password, snippets) => {
+  // Now accepts projects array instead of snippets
+  const enableEncryption = useCallback(async (password, projects) => {
     try {
       // Create password hash for verification
       const passwordHash = await createPasswordHash(password);
 
-      // Encrypt existing snippets
-      const encryptedData = await encryptSnippets(snippets, password);
+      // Encrypt existing projects
+      const encryptedData = await encryptProjects(projects, password);
 
       // Store encrypted state
       localStorage.setItem(STORAGE_KEYS.ENABLED, 'true');
       localStorage.setItem(STORAGE_KEYS.PASSWORD_HASH, passwordHash);
       localStorage.setItem(STORAGE_KEYS.ENCRYPTED_DATA, encryptedData);
 
-      // Remove unencrypted snippets
+      // Remove unencrypted data
       localStorage.removeItem('pastekit-snippets');
+      localStorage.removeItem('pastekit-projects');
 
       setIsEnabled(true);
       setIsUnlocked(true);
@@ -61,7 +67,8 @@ export function EncryptionProvider({ children }) {
   }, []);
 
   // Disable encryption
-  const disableEncryption = useCallback(async (password, decryptedSnippets) => {
+  // Now accepts projects array instead of snippets
+  const disableEncryption = useCallback(async (password, decryptedProjects) => {
     try {
       const passwordHash = localStorage.getItem(STORAGE_KEYS.PASSWORD_HASH);
       const isValid = await verifyPassword(password, passwordHash);
@@ -70,8 +77,8 @@ export function EncryptionProvider({ children }) {
         return { success: false, error: 'Incorrect password' };
       }
 
-      // Store snippets unencrypted
-      localStorage.setItem('pastekit-snippets', JSON.stringify(decryptedSnippets));
+      // Store projects unencrypted
+      localStorage.setItem('pastekit-projects', JSON.stringify(decryptedProjects));
 
       // Remove encryption data
       localStorage.removeItem(STORAGE_KEYS.ENABLED);
@@ -103,10 +110,15 @@ export function EncryptionProvider({ children }) {
         return { success: false, error: 'Incorrect password' };
       }
 
-      // Try to decrypt to fully verify
+      // Try to decrypt to fully verify (try new format first, then legacy)
       const encryptedData = localStorage.getItem(STORAGE_KEYS.ENCRYPTED_DATA);
+      const legacyEncryptedData = localStorage.getItem(STORAGE_KEYS.LEGACY_ENCRYPTED_DATA);
+
       if (encryptedData) {
-        await decryptSnippets(encryptedData, password);
+        await decryptProjects(encryptedData, password);
+      } else if (legacyEncryptedData) {
+        // Legacy format - will be migrated on load
+        await decryptSnippets(legacyEncryptedData, password);
       }
 
       setIsUnlocked(true);
@@ -124,14 +136,14 @@ export function EncryptionProvider({ children }) {
     setCurrentPassword(null);
   }, []);
 
-  // Save encrypted snippets
-  const saveEncrypted = useCallback(async (snippets) => {
+  // Save encrypted projects
+  const saveEncrypted = useCallback(async (projects) => {
     if (!isEnabled || !isUnlocked || !currentPassword) {
       return { success: false, error: 'Encryption not active' };
     }
 
     try {
-      const encryptedData = await encryptSnippets(snippets, currentPassword);
+      const encryptedData = await encryptProjects(projects, currentPassword);
       localStorage.setItem(STORAGE_KEYS.ENCRYPTED_DATA, encryptedData);
       return { success: true };
     } catch (error) {
@@ -139,20 +151,34 @@ export function EncryptionProvider({ children }) {
     }
   }, [isEnabled, isUnlocked, currentPassword]);
 
-  // Load encrypted snippets
+  // Load encrypted projects
+  // Returns { success, projects, needsMigration }
   const loadEncrypted = useCallback(async (password) => {
     const encryptedData = localStorage.getItem(STORAGE_KEYS.ENCRYPTED_DATA);
+    const legacyEncryptedData = localStorage.getItem(STORAGE_KEYS.LEGACY_ENCRYPTED_DATA);
 
-    if (!encryptedData) {
-      return { success: true, snippets: null };
+    // Try new format first
+    if (encryptedData) {
+      try {
+        const projects = await decryptProjects(encryptedData, password || currentPassword);
+        return { success: true, projects, needsMigration: false };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     }
 
-    try {
-      const snippets = await decryptSnippets(encryptedData, password || currentPassword);
-      return { success: true, snippets };
-    } catch (error) {
-      return { success: false, error: error.message };
+    // Try legacy format
+    if (legacyEncryptedData) {
+      try {
+        const snippets = await decryptSnippets(legacyEncryptedData, password || currentPassword);
+        // Return snippets with migration flag so caller can migrate
+        return { success: true, snippets, needsMigration: true };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     }
+
+    return { success: true, projects: null, needsMigration: false };
   }, [currentPassword]);
 
   // Check if data in storage is encrypted
@@ -162,7 +188,8 @@ export function EncryptionProvider({ children }) {
   }, []);
 
   // Change password
-  const changePassword = useCallback(async (oldPassword, newPassword, snippets) => {
+  // Now accepts projects array instead of snippets
+  const changePassword = useCallback(async (oldPassword, newPassword, projects) => {
     try {
       const passwordHash = localStorage.getItem(STORAGE_KEYS.PASSWORD_HASH);
       const isValid = await verifyPassword(oldPassword, passwordHash);
@@ -175,7 +202,7 @@ export function EncryptionProvider({ children }) {
       const newPasswordHash = await createPasswordHash(newPassword);
 
       // Re-encrypt with new password
-      const encryptedData = await encryptSnippets(snippets, newPassword);
+      const encryptedData = await encryptProjects(projects, newPassword);
 
       localStorage.setItem(STORAGE_KEYS.PASSWORD_HASH, newPasswordHash);
       localStorage.setItem(STORAGE_KEYS.ENCRYPTED_DATA, encryptedData);

@@ -5,6 +5,13 @@ import { X, AlertTriangle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { SnippetGrid } from '@/components/SnippetGrid';
 import { Toast } from '@/components/Toast';
+import { ProjectSelector } from '@/components/ProjectSelector';
+import {
+  CreateProjectModal,
+  RenameProjectModal,
+  DeleteProjectModal,
+  ManageProjectsModal
+} from '@/components/ProjectModal';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import {
   EncryptionSetupModal,
@@ -13,6 +20,7 @@ import {
   ChangePasswordModal
 } from '@/components/EncryptionModal';
 import { EncryptionProvider, useEncryption } from '@/contexts/EncryptionContext';
+import { ProjectProvider, useProjects } from '@/contexts/ProjectContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
@@ -28,8 +36,27 @@ function HomeContent() {
   // Encryption context
   const encryption = useEncryption();
 
-  // Snippets state with localStorage persistence
-  const [snippets, setSnippets] = useLocalStorage('pastekit-snippets', defaultSnippets);
+  // Projects context
+  const projectsCtx = useProjects();
+  const {
+    projects,
+    activeProject,
+    activeProjectId,
+    isLoading: projectsLoading,
+    dataLoaded,
+    createProject,
+    updateProject,
+    deleteProject,
+    switchProject,
+    duplicateProject,
+    updateActiveProjectSnippets,
+    resetToDefaults,
+    resetAllToDefaults,
+    clearProjects
+  } = projectsCtx;
+
+  // Get snippets from active project
+  const snippets = activeProject?.snippets || [];
 
   // Edit mode state
   const [isEditMode, setIsEditMode] = useLocalStorage('pastekit-edit-mode', false);
@@ -45,39 +72,15 @@ function HomeContent() {
   const [disableModalOpen, setDisableModalOpen] = useState(false);
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
 
+  // Project modal states
+  const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
+  const [manageProjectsModalOpen, setManageProjectsModalOpen] = useState(false);
+  const [renameProjectModalOpen, setRenameProjectModalOpen] = useState(false);
+  const [deleteProjectModalOpen, setDeleteProjectModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+
   // File input ref for import
   const fileInputRef = useRef(null);
-
-  // Track if we've loaded encrypted data this session (prevents save before load)
-  const [encryptedDataLoaded, setEncryptedDataLoaded] = useState(false);
-
-  // Load encrypted snippets when unlocked
-  useEffect(() => {
-    const loadEncryptedData = async () => {
-      if (encryption.isEnabled && encryption.isUnlocked && !encryptedDataLoaded) {
-        const result = await encryption.loadEncrypted();
-        if (result.success && result.snippets) {
-          setSnippets(result.snippets);
-        }
-        setEncryptedDataLoaded(true);
-      }
-    };
-    loadEncryptedData();
-  }, [encryption.isEnabled, encryption.isUnlocked, encryptedDataLoaded, encryption.loadEncrypted, setSnippets]);
-
-  // Reset loaded flag when locked
-  useEffect(() => {
-    if (!encryption.isUnlocked) {
-      setEncryptedDataLoaded(false);
-    }
-  }, [encryption.isUnlocked]);
-
-  // Save encrypted snippets when they change (only after initial load)
-  useEffect(() => {
-    if (encryption.isEnabled && encryption.isUnlocked && encryptedDataLoaded && snippets && snippets.length > 0) {
-      encryption.saveEncrypted(snippets);
-    }
-  }, [snippets, encryption.isEnabled, encryption.isUnlocked, encryptedDataLoaded, encryption.saveEncrypted]);
 
   // Show toast helper
   const showToast = useCallback((message, type = 'success') => {
@@ -103,7 +106,7 @@ function HomeContent() {
         { label: '', value: '', type: 'text' }
       ]
     };
-    setSnippets(prev => [newSnippet, ...prev]);
+    updateActiveProjectSnippets(prev => [newSnippet, ...prev]);
 
     // Auto-enable edit mode when adding
     if (!isEditMode) {
@@ -111,22 +114,22 @@ function HomeContent() {
     }
 
     showToast('New snippet added!', 'success');
-  }, [setSnippets, isEditMode, setIsEditMode, showToast]);
+  }, [updateActiveProjectSnippets, isEditMode, setIsEditMode, showToast]);
 
   // Update snippet
   const handleUpdateSnippet = useCallback((id, updates) => {
-    setSnippets(prev =>
+    updateActiveProjectSnippets(prev =>
       prev.map(snippet =>
         snippet.id === id ? { ...snippet, ...updates } : snippet
       )
     );
-  }, [setSnippets]);
+  }, [updateActiveProjectSnippets]);
 
   // Delete snippet
   const handleDeleteSnippet = useCallback((id) => {
-    setSnippets(prev => prev.filter(snippet => snippet.id !== id));
+    updateActiveProjectSnippets(prev => prev.filter(snippet => snippet.id !== id));
     showToast('Snippet deleted', 'success');
-  }, [setSnippets, showToast]);
+  }, [updateActiveProjectSnippets, showToast]);
 
   // Copy snippet field
   const handleCopySnippet = useCallback((id) => {
@@ -138,30 +141,51 @@ function HomeContent() {
 
   // Reorder snippets (drag and drop)
   const handleReorderSnippets = useCallback((newSnippets) => {
-    setSnippets(newSnippets);
-  }, [setSnippets]);
+    updateActiveProjectSnippets(newSnippets);
+  }, [updateActiveProjectSnippets]);
 
-  // Export snippets as JSON
-  const handleExport = useCallback(() => {
+  // Export current project's snippets as JSON
+  const handleExportCurrentProject = useCallback(() => {
     const dataStr = JSON.stringify(snippets, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `pastekit-export-${new Date().toISOString().split('T')[0]}.json`;
+    const projectName = activeProject?.name?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'project';
+    link.download = `pastekit-${projectName}-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    showToast('Snippets exported!', 'success');
-  }, [snippets, showToast]);
+    showToast(`Exported "${activeProject?.name}" project!`, 'success');
+  }, [snippets, activeProject, showToast]);
+
+  // Export all projects as JSON
+  const handleExportAllProjects = useCallback(() => {
+    const exportData = {
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      projects: projects
+    };
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `pastekit-all-projects-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${projects.length} project${projects.length !== 1 ? 's' : ''}!`, 'success');
+  }, [projects, showToast]);
 
   // Trigger file input for import
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  // Import snippets from JSON file
+  // Import from JSON file (handles both snippet arrays and full project exports)
   const handleImport = useCallback((event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -171,9 +195,47 @@ function HomeContent() {
       try {
         const imported = JSON.parse(e.target.result);
 
-        // Validate structure
+        // Check if it's a full projects export (version 2 format)
+        if (imported.version === 2 && Array.isArray(imported.projects)) {
+          // Validate projects structure
+          const isValid = imported.projects.every(project => {
+            if (!project || typeof project.id !== 'string' || typeof project.name !== 'string') {
+              return false;
+            }
+            if (!Array.isArray(project.snippets)) {
+              return false;
+            }
+            return project.snippets.every(snippet => {
+              if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
+                return false;
+              }
+              if (!Array.isArray(snippet.fields)) {
+                return false;
+              }
+              return snippet.fields.every(field =>
+                field &&
+                typeof field.label === 'string' &&
+                typeof field.value === 'string' &&
+                ['text', 'password', 'rich'].includes(field.type)
+              );
+            });
+          });
+
+          if (!isValid) {
+            showToast('Invalid file: projects have invalid structure', 'error');
+            return;
+          }
+
+          // Import all projects
+          projectsCtx.setProjects(imported.projects);
+          projectsCtx.setActiveProjectId(imported.projects[0]?.id);
+          showToast(`Imported ${imported.projects.length} project${imported.projects.length !== 1 ? 's' : ''}!`, 'success');
+          return;
+        }
+
+        // Legacy format - array of snippets
         if (!Array.isArray(imported)) {
-          showToast('Invalid file: expected an array of snippets', 'error');
+          showToast('Invalid file: expected an array of snippets or projects export', 'error');
           return;
         }
 
@@ -185,7 +247,6 @@ function HomeContent() {
           if (!Array.isArray(snippet.fields)) {
             return false;
           }
-          // Validate each field has required properties
           return snippet.fields.every(field =>
             field &&
             typeof field.label === 'string' &&
@@ -205,8 +266,9 @@ function HomeContent() {
           return;
         }
 
-        setSnippets(imported);
-        showToast(`Imported ${imported.length} snippet${imported.length !== 1 ? 's' : ''}!`, 'success');
+        // Import into current project
+        updateActiveProjectSnippets(imported);
+        showToast(`Imported ${imported.length} snippet${imported.length !== 1 ? 's' : ''} into "${activeProject?.name}"!`, 'success');
       } catch (err) {
         showToast('Failed to parse JSON file', 'error');
       }
@@ -215,40 +277,34 @@ function HomeContent() {
 
     // Reset input so same file can be imported again
     event.target.value = '';
-  }, [setSnippets, showToast]);
+  }, [updateActiveProjectSnippets, activeProject, projectsCtx, showToast]);
 
-  // Reset all data to defaults
+  // Reset current project to defaults
   const handleReset = useCallback(async () => {
-    // If encryption is enabled, we need to save the default snippets encrypted
-    if (encryption.isEnabled && encryption.isUnlocked) {
-      await encryption.saveEncrypted(defaultSnippets);
-    }
-    setSnippets(defaultSnippets);
+    await resetToDefaults();
     // Enable edit mode so user can immediately customize/delete defaults
     setIsEditMode(true);
-    showToast('All data reset to defaults - Edit Mode enabled', 'success');
-  }, [setSnippets, setIsEditMode, showToast, encryption]);
+    showToast('Project reset to defaults - Edit Mode enabled', 'success');
+  }, [resetToDefaults, setIsEditMode, showToast]);
 
   // Handle encryption button click
   const handleEncryptionClick = useCallback(() => {
     if (!encryption.isEnabled) {
       setSetupModalOpen(true);
     } else if (encryption.isUnlocked) {
-      // Show options - for simplicity, toggle disable modal
-      // In a fuller implementation, could show a menu with options
       setDisableModalOpen(true);
     }
   }, [encryption.isEnabled, encryption.isUnlocked]);
 
   // Setup encryption
   const handleSetupEncryption = useCallback(async (password) => {
-    const result = await encryption.enableEncryption(password, snippets);
+    const result = await encryption.enableEncryption(password, projects);
     if (result.success) {
       showToast('Encryption enabled!', 'success');
       setWarningDismissed(true);
     }
     return result;
-  }, [encryption, snippets, showToast, setWarningDismissed]);
+  }, [encryption, projects, showToast, setWarningDismissed]);
 
   // Unlock encryption
   const handleUnlock = useCallback(async (password) => {
@@ -261,21 +317,21 @@ function HomeContent() {
 
   // Disable encryption
   const handleDisableEncryption = useCallback(async (password) => {
-    const result = await encryption.disableEncryption(password, snippets);
+    const result = await encryption.disableEncryption(password, projects);
     if (result.success) {
       showToast('Encryption disabled', 'success');
     }
     return result;
-  }, [encryption, snippets, showToast]);
+  }, [encryption, projects, showToast]);
 
   // Change password
   const handleChangePassword = useCallback(async (oldPassword, newPassword) => {
-    const result = await encryption.changePassword(oldPassword, newPassword, snippets);
+    const result = await encryption.changePassword(oldPassword, newPassword, projects);
     if (result.success) {
       showToast('Password changed!', 'success');
     }
     return result;
-  }, [encryption, snippets, showToast]);
+  }, [encryption, projects, showToast]);
 
   // Dismiss security warning
   const handleDismissWarning = useCallback(() => {
@@ -284,14 +340,47 @@ function HomeContent() {
 
   // Lock encryption and clear data from memory
   const handleLock = useCallback(() => {
-    // Lock encryption first (clears password from memory)
     encryption.lock();
-    // Clear snippets from React state (memory) - use internal setState to avoid localStorage write
-    // The useLocalStorage hook will be bypassed since encryption.isEnabled is true
-    // and we're about to show the unlock modal anyway
-    setSnippets([]);
+    clearProjects();
     showToast('Locked - data cleared from memory', 'success');
-  }, [setSnippets, encryption, showToast]);
+  }, [clearProjects, encryption, showToast]);
+
+  // Project handlers
+  const handleCreateProject = useCallback((name) => {
+    const project = createProject(name);
+    showToast(`Created project "${project.name}"`, 'success');
+  }, [createProject, showToast]);
+
+  const handleRenameProject = useCallback((projectId, newName) => {
+    updateProject(projectId, { name: newName });
+    showToast('Project renamed', 'success');
+  }, [updateProject, showToast]);
+
+  const handleDeleteProject = useCallback((projectId) => {
+    const result = deleteProject(projectId);
+    if (result.success) {
+      showToast('Project deleted', 'success');
+    } else {
+      showToast(result.error, 'error');
+    }
+  }, [deleteProject, showToast]);
+
+  const handleDuplicateProject = useCallback((projectId) => {
+    const result = duplicateProject(projectId);
+    if (result.success) {
+      showToast(`Duplicated project as "${result.project.name}"`, 'success');
+    } else {
+      showToast(result.error, 'error');
+    }
+  }, [duplicateProject, showToast]);
+
+  const handleSwitchProject = useCallback((projectId) => {
+    const result = switchProject(projectId);
+    if (result.success) {
+      const project = projects.find(p => p.id === projectId);
+      showToast(`Switched to "${project?.name}"`, 'success');
+    }
+  }, [switchProject, projects, showToast]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -319,8 +408,8 @@ function HomeContent() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isEditMode, setIsEditMode, showToast, encryption.isEnabled, encryption.isUnlocked, handleLock]);
 
-  // Don't render until theme is mounted to avoid flash
-  if (!mounted || encryption.isLoading) {
+  // Don't render until theme is mounted and data is ready
+  if (!mounted || encryption.isLoading || projectsLoading) {
     return null;
   }
 
@@ -354,7 +443,9 @@ function HomeContent() {
         isDark={isDark}
         onToggleTheme={toggleTheme}
         onAddSnippet={handleAddSnippet}
-        onExport={handleExport}
+        onExport={handleExportCurrentProject}
+        onExportCurrentProject={handleExportCurrentProject}
+        onExportAllProjects={handleExportAllProjects}
         onImport={handleImportClick}
         onReset={handleReset}
         snippetCount={snippets.length}
@@ -362,6 +453,20 @@ function HomeContent() {
         encryptionUnlocked={encryption.isUnlocked}
         onEncryptionClick={handleEncryptionClick}
         onLock={handleLock}
+        projects={projects}
+        activeProject={activeProject}
+        onSwitchProject={handleSwitchProject}
+        onCreateProject={() => setCreateProjectModalOpen(true)}
+        onManageProjects={() => setManageProjectsModalOpen(true)}
+        projectSelector={
+          <ProjectSelector
+            projects={projects}
+            activeProject={activeProject}
+            onSwitchProject={handleSwitchProject}
+            onCreateProject={() => setCreateProjectModalOpen(true)}
+            onManageProjects={() => setManageProjectsModalOpen(true)}
+          />
+        }
       />
 
       {/* Main Content */}
@@ -445,6 +550,15 @@ function HomeContent() {
             </AccordionContent>
           </AccordionItem>
 
+          <AccordionItem value="projects">
+            <AccordionTrigger>What are Projects?</AccordionTrigger>
+            <AccordionContent>
+              Projects let you organize your snippets into separate collections. For example, you might have
+              a &quot;Work&quot; project for work-related credentials and a &quot;Personal&quot; project for personal snippets.
+              Click the project name in the header to switch between projects, create new ones, or manage existing ones.
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="field-types">
             <AccordionTrigger>What are the different field types?</AccordionTrigger>
             <AccordionContent>
@@ -494,10 +608,10 @@ function HomeContent() {
           <AccordionItem value="export">
             <AccordionTrigger>Can I export and import my snippets?</AccordionTrigger>
             <AccordionContent>
-              Yes! Click the &quot;Export&quot; button in the header to download all your snippets as a JSON file.
-              This allows you to backup your data, transfer it to another browser, or share snippet
-              collections with others. To restore or load snippets, click &quot;Import&quot; and select a previously
-              exported JSON file. The imported snippets will replace your current collection.
+              Yes! Click the menu button in the header to access export options. You can export just the current
+              project or all projects at once. To restore or load snippets, click &quot;Import&quot; and select a previously
+              exported JSON file. Importing a single-project export will replace the current project&apos;s snippets,
+              while importing a full backup will replace all your projects.
             </AccordionContent>
           </AccordionItem>
 
@@ -586,6 +700,49 @@ function HomeContent() {
         onClose={() => setChangePasswordModalOpen(false)}
         onChange={handleChangePassword}
       />
+
+      {/* Project Modals */}
+      <CreateProjectModal
+        open={createProjectModalOpen}
+        onClose={() => setCreateProjectModalOpen(false)}
+        onCreate={handleCreateProject}
+      />
+
+      <RenameProjectModal
+        open={renameProjectModalOpen}
+        onClose={() => setRenameProjectModalOpen(false)}
+        project={selectedProject}
+        onRename={handleRenameProject}
+      />
+
+      <DeleteProjectModal
+        open={deleteProjectModalOpen}
+        onClose={() => setDeleteProjectModalOpen(false)}
+        project={selectedProject}
+        onDelete={handleDeleteProject}
+        projectCount={projects.length}
+      />
+
+      <ManageProjectsModal
+        open={manageProjectsModalOpen}
+        onClose={() => setManageProjectsModalOpen(false)}
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onRename={(project) => {
+          setSelectedProject(project);
+          setManageProjectsModalOpen(false);
+          setRenameProjectModalOpen(true);
+        }}
+        onDuplicate={(projectId) => {
+          handleDuplicateProject(projectId);
+        }}
+        onDelete={(project) => {
+          setSelectedProject(project);
+          setManageProjectsModalOpen(false);
+          setDeleteProjectModalOpen(true);
+        }}
+        onSwitch={handleSwitchProject}
+      />
     </div>
   );
 }
@@ -593,7 +750,9 @@ function HomeContent() {
 export default function Home() {
   return (
     <EncryptionProvider>
-      <HomeContent />
+      <ProjectProvider>
+        <HomeContent />
+      </ProjectProvider>
     </EncryptionProvider>
   );
 }

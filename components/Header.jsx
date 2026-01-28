@@ -46,13 +46,22 @@ export const Header = ({
   onToggleTheme,
   onAddSnippet,
   onExport,
+  onExportCurrentProject,
+  onExportAllProjects,
   onImport,
   onReset,
   snippetCount,
   encryptionEnabled,
   encryptionUnlocked,
   onEncryptionClick,
-  onLock
+  onLock,
+  // Project props
+  projects,
+  activeProject,
+  onSwitchProject,
+  onCreateProject,
+  onManageProjects,
+  projectSelector
 }) => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
@@ -101,6 +110,9 @@ export const Header = ({
                   {snippetCount} snippet{snippetCount !== 1 ? 's' : ''} saved
                 </p>
               </div>
+
+              {/* Project Selector */}
+              {projectSelector}
             </div>
 
             {/* Actions */}
@@ -138,11 +150,17 @@ export const Header = ({
                       <p>More options</p>
                     </TooltipContent>
                   </Tooltip>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={onExport} className="cursor-pointer">
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={onExportCurrentProject || onExport} className="cursor-pointer">
                       <Download className="h-4 w-4 mr-2" />
-                      Export {!encryptionEnabled && '(unencrypted)'}
+                      Export Current Project
                     </DropdownMenuItem>
+                    {onExportAllProjects && (
+                      <DropdownMenuItem onClick={onExportAllProjects} className="cursor-pointer">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export All Projects
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={onImport} className="cursor-pointer">
                       <Upload className="h-4 w-4 mr-2" />
                       Import
