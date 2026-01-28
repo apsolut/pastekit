@@ -679,7 +679,7 @@ function HomeContent() {
           {encryption.isEnabled && ' (encrypted)'}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          by <a href="https://apsolut.dev/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">AP</a>
+          by <a href="https://apsolut.dev/" target="_blank" rel="noopener noreferrer" className="font-bold text-foreground hover:text-primary transition-colors">AP</a>
         </p>
       </footer>
 
