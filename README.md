@@ -1,6 +1,8 @@
 # PasteKit
 
 A clipboard snippet manager for storing and quickly copying frequently used text snippets.
+![PasteKit | one-click copy snippets](./public/pastekit-aleksandar-perisic.png)
+
 
 ## Features
 
