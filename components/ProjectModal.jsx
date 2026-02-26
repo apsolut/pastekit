@@ -56,6 +56,7 @@ export function CreateProjectModal({ open, onClose, onCreate }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Project name"
+            maxLength={50}
             autoFocus
           />
         </div>
@@ -115,6 +116,7 @@ export function RenameProjectModal({ open, onClose, project, onRename }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Project name"
+            maxLength={50}
             autoFocus
           />
         </div>
