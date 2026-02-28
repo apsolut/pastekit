@@ -24,6 +24,12 @@ import { ProjectProvider, useProjects } from '@/contexts/ProjectContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
+import {
+  MAX_PROJECT_NAME_LENGTH,
+  MAX_SNIPPET_TITLE_LENGTH,
+  MAX_FIELD_LABEL_LENGTH,
+  MAX_FIELD_VALUE_LENGTH
+} from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 // Generate unique ID
@@ -202,11 +208,19 @@ function HomeContent() {
             if (!project || typeof project.id !== 'string' || typeof project.name !== 'string') {
               return false;
             }
+            // Length validation
+            if (project.name.length > MAX_PROJECT_NAME_LENGTH) {
+              return false;
+            }
             if (!Array.isArray(project.snippets)) {
               return false;
             }
             return project.snippets.every(snippet => {
               if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
+                return false;
+              }
+              // Length validation
+              if (snippet.title.length > MAX_SNIPPET_TITLE_LENGTH) {
                 return false;
               }
               if (!Array.isArray(snippet.fields)) {
@@ -216,7 +230,9 @@ function HomeContent() {
                 field &&
                 typeof field.label === 'string' &&
                 typeof field.value === 'string' &&
-                ['text', 'password', 'rich'].includes(field.type)
+                ['text', 'password', 'rich'].includes(field.type) &&
+                field.label.length <= MAX_FIELD_LABEL_LENGTH &&
+                field.value.length <= MAX_FIELD_VALUE_LENGTH
               );
             });
           });
@@ -244,6 +260,10 @@ function HomeContent() {
           if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
             return false;
           }
+          // Length validation
+          if (snippet.title.length > MAX_SNIPPET_TITLE_LENGTH) {
+            return false;
+          }
           if (!Array.isArray(snippet.fields)) {
             return false;
           }
@@ -251,7 +271,9 @@ function HomeContent() {
             field &&
             typeof field.label === 'string' &&
             typeof field.value === 'string' &&
-            ['text', 'password', 'rich'].includes(field.type)
+            ['text', 'password', 'rich'].includes(field.type) &&
+            field.label.length <= MAX_FIELD_LABEL_LENGTH &&
+            field.value.length <= MAX_FIELD_VALUE_LENGTH
           );
         });
 
