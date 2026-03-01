@@ -25,6 +25,12 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
 import { cn } from '@/lib/utils';
+import {
+  MAX_PROJECT_NAME_LENGTH,
+  MAX_SNIPPET_TITLE_LENGTH,
+  MAX_FIELD_LABEL_LENGTH,
+  MAX_FIELD_VALUE_LENGTH
+} from '@/lib/constants';
 
 // Generate unique ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -202,6 +208,10 @@ function HomeContent() {
             if (!project || typeof project.id !== 'string' || typeof project.name !== 'string') {
               return false;
             }
+              // Security: validate project name length
+              if (project.name.length > MAX_PROJECT_NAME_LENGTH) {
+                return false;
+              }
             if (!Array.isArray(project.snippets)) {
               return false;
             }
@@ -209,6 +219,10 @@ function HomeContent() {
               if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
                 return false;
               }
+                // Security: validate snippet title length
+                if (snippet.title.length > MAX_SNIPPET_TITLE_LENGTH) {
+                  return false;
+                }
               if (!Array.isArray(snippet.fields)) {
                 return false;
               }
@@ -216,7 +230,10 @@ function HomeContent() {
                 field &&
                 typeof field.label === 'string' &&
                 typeof field.value === 'string' &&
-                ['text', 'password', 'rich'].includes(field.type)
+                  ['text', 'password', 'rich'].includes(field.type) &&
+                  // Security: validate field label and value lengths
+                  field.label.length <= MAX_FIELD_LABEL_LENGTH &&
+                  field.value.length <= MAX_FIELD_VALUE_LENGTH
               );
             });
           });
@@ -244,6 +261,10 @@ function HomeContent() {
           if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
             return false;
           }
+          // Security: validate snippet title length
+          if (snippet.title.length > MAX_SNIPPET_TITLE_LENGTH) {
+            return false;
+          }
           if (!Array.isArray(snippet.fields)) {
             return false;
           }
@@ -251,7 +272,10 @@ function HomeContent() {
             field &&
             typeof field.label === 'string' &&
             typeof field.value === 'string' &&
-            ['text', 'password', 'rich'].includes(field.type)
+            ['text', 'password', 'rich'].includes(field.type) &&
+            // Security: validate field label and value lengths
+            field.label.length <= MAX_FIELD_LABEL_LENGTH &&
+            field.value.length <= MAX_FIELD_VALUE_LENGTH
           );
         });
 

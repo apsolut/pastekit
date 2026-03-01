@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { MAX_SNIPPET_TITLE_LENGTH } from '@/lib/constants';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import {
   Dialog,
@@ -213,6 +214,7 @@ export const Header = ({
                       onChange={(e) => setConfirmText(e.target.value)}
                       placeholder="Type 'delete' to confirm"
                       className="font-mono"
+                      maxLength={10}
                     />
                   </div>
                   <DialogFooter>

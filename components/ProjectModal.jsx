@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Folder, Copy, Trash2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MAX_PROJECT_NAME_LENGTH } from '@/lib/constants';
 import {
   Dialog,
   DialogContent,
@@ -57,6 +58,7 @@ export function CreateProjectModal({ open, onClose, onCreate }) {
             onKeyDown={handleKeyDown}
             placeholder="Project name"
             autoFocus
+            maxLength={MAX_PROJECT_NAME_LENGTH}
           />
         </div>
 
@@ -116,6 +118,7 @@ export function RenameProjectModal({ open, onClose, project, onRename }) {
             onKeyDown={handleKeyDown}
             placeholder="Project name"
             autoFocus
+            maxLength={MAX_PROJECT_NAME_LENGTH}
           />
         </div>
 
