@@ -31,6 +31,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import {
+  SNIPPET_TITLE_MAX_LENGTH,
+  FIELD_LABEL_MAX_LENGTH,
+  FIELD_VALUE_MAX_LENGTH
+} from '@/lib/constants';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text', icon: Type },
@@ -267,6 +272,7 @@ export const SnippetCard = ({
             onChange={(e) => handleFieldChange(index, 'label', e.target.value)}
             onBlur={handleFieldBlur}
             placeholder="Label..."
+            maxLength={FIELD_LABEL_MAX_LENGTH}
             className={cn(
               "h-6 flex-1 text-xs font-medium bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary px-1 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
               inDialog && "h-8 text-sm"
@@ -291,6 +297,7 @@ export const SnippetCard = ({
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             onBlur={handleFieldBlur}
             placeholder="Value..."
+            maxLength={FIELD_VALUE_MAX_LENGTH}
             className={cn(
               "min-h-[60px] text-xs font-mono bg-muted/30 border-border/50 resize-y",
               inDialog && "min-h-[120px] text-sm"
@@ -303,6 +310,7 @@ export const SnippetCard = ({
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             onBlur={handleFieldBlur}
             placeholder="Value..."
+            maxLength={FIELD_VALUE_MAX_LENGTH}
             className={cn(
               "h-8 text-xs font-mono bg-muted/30 border-border/50",
               inDialog && "h-10 text-sm"
@@ -352,6 +360,7 @@ export const SnippetCard = ({
                   onChange={handleTitleChange}
                   onBlur={handleTitleBlur}
                   placeholder="Snippet title..."
+                  maxLength={SNIPPET_TITLE_MAX_LENGTH}
                   className="h-7 text-sm font-semibold bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary px-1 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               ) : (
@@ -456,6 +465,7 @@ export const SnippetCard = ({
                     onChange={handleTitleChange}
                     onBlur={handleTitleBlur}
                     placeholder="Snippet title..."
+                    maxLength={SNIPPET_TITLE_MAX_LENGTH}
                     className="text-lg font-semibold bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary px-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 ) : (
