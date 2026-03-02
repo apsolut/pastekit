@@ -52,5 +52,5 @@ lerna-debug.log*
 # Temporary folders
 tmp/
 temp/
-.claude/settings.local.json
-nul
+# AI tooling
+.claude/
