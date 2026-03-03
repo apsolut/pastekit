@@ -25,6 +25,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
 import { cn } from '@/lib/utils';
+import { LIMITS } from '@/lib/constants';
 
 // Generate unique ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -190,6 +191,13 @@ function HomeContent() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Security: File size limit to prevent DoS
+    if (file.size > LIMITS.MAX_IMPORT_FILE_SIZE) {
+      showToast(`File too large (max ${LIMITS.MAX_IMPORT_FILE_SIZE / (1024 * 1024)}MB)`, 'error');
+      event.target.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -197,36 +205,50 @@ function HomeContent() {
 
         // Check if it's a full projects export (version 2 format)
         if (imported.version === 2 && Array.isArray(imported.projects)) {
+          // Security: Limit number of projects
+          if (imported.projects.length > LIMITS.MAX_PROJECTS) {
+            showToast(`Too many projects (max ${LIMITS.MAX_PROJECTS})`, 'error');
+            return;
+          }
+
           // Validate projects structure
           const isValid = imported.projects.every(project => {
             if (!project || typeof project.id !== 'string' || typeof project.name !== 'string') {
               return false;
             }
-            if (project.name.length > 50) return false;
+            if (project.name.length > LIMITS.PROJECT_NAME) return false;
             if (!Array.isArray(project.snippets)) {
               return false;
             }
+
+            // Security: Limit snippets per project
+            if (project.snippets.length > LIMITS.MAX_SNIPPETS_PER_PROJECT) return false;
+
             return project.snippets.every(snippet => {
               if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
                 return false;
               }
-              if (snippet.title.length > 100) return false;
+              if (snippet.title.length > LIMITS.SNIPPET_TITLE) return false;
               if (!Array.isArray(snippet.fields)) {
                 return false;
               }
+
+              // Security: Limit fields per snippet
+              if (snippet.fields.length > LIMITS.MAX_FIELDS_PER_SNIPPET) return false;
+
               return snippet.fields.every(field =>
                 field &&
                 typeof field.label === 'string' &&
                 typeof field.value === 'string' &&
                 ['text', 'password', 'rich'].includes(field.type) &&
-                field.label.length <= 50 &&
-                field.value.length <= 10000
+                field.label.length <= LIMITS.FIELD_LABEL &&
+                field.value.length <= LIMITS.FIELD_VALUE
               );
             });
           });
 
           if (!isValid) {
-            showToast('Invalid file: projects have invalid structure', 'error');
+            showToast('Invalid file: projects have invalid structure or exceed limits', 'error');
             return;
           }
 
@@ -243,33 +265,37 @@ function HomeContent() {
           return;
         }
 
+        // Security: Limit snippets for legacy import
+        if (imported.length > LIMITS.MAX_SNIPPETS_PER_PROJECT) {
+          showToast(`Too many snippets (max ${LIMITS.MAX_SNIPPETS_PER_PROJECT})`, 'error');
+          return;
+        }
+
         // Validate each snippet has required fields and valid structure
         const isValid = imported.every(snippet => {
           if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
             return false;
           }
-          if (snippet.title.length > 100) return false;
+          if (snippet.title.length > LIMITS.SNIPPET_TITLE) return false;
           if (!Array.isArray(snippet.fields)) {
             return false;
           }
+
+          // Security: Limit fields per snippet
+          if (snippet.fields.length > LIMITS.MAX_FIELDS_PER_SNIPPET) return false;
+
           return snippet.fields.every(field =>
             field &&
             typeof field.label === 'string' &&
             typeof field.value === 'string' &&
             ['text', 'password', 'rich'].includes(field.type) &&
-            field.label.length <= 50 &&
-            field.value.length <= 10000
+            field.label.length <= LIMITS.FIELD_LABEL &&
+            field.value.length <= LIMITS.FIELD_VALUE
           );
         });
 
         if (!isValid) {
-          showToast('Invalid file: snippets have invalid structure', 'error');
-          return;
-        }
-
-        // Sanitize: limit reasonable sizes to prevent DoS
-        if (imported.length > 1000) {
-          showToast('Too many snippets (max 1000)', 'error');
+          showToast('Invalid file: snippets have invalid structure or exceed limits', 'error');
           return;
         }
 
