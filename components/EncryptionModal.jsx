@@ -78,6 +78,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
               onChange={(e) => setPassword(e.target.value)}
               maxLength={128}
               className="pr-10"
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -94,6 +95,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             maxLength={128}
+            autoComplete="new-password"
           />
 
           {error && (
@@ -206,6 +208,7 @@ export function EncryptionUnlockModal({ open, onUnlock }) {
               maxLength={128}
               className="pr-10"
               autoFocus
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -291,6 +294,7 @@ export function DisableEncryptionModal({ open, onClose, onDisable }) {
               onChange={(e) => setPassword(e.target.value)}
               maxLength={128}
               className="pr-10"
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -401,6 +405,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
               onChange={(e) => setCurrentPassword(e.target.value)}
               maxLength={128}
               className="pr-10"
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -417,6 +422,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             maxLength={128}
+            autoComplete="new-password"
           />
 
           <Input
@@ -425,6 +431,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             maxLength={128}
+            autoComplete="new-password"
           />
 
           {error && (

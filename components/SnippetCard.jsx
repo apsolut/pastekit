@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { LIMITS } from '@/lib/constants';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text', icon: Type },
@@ -145,6 +146,7 @@ export const SnippetCard = ({
   };
 
   const addField = () => {
+    if (localFields.length >= LIMITS.MAX_FIELDS_PER_SNIPPET) return;
     const newFields = [...localFields, { ...DEFAULT_FIELD }];
     setLocalFields(newFields);
     onUpdate(snippet.id, { fields: newFields });
@@ -267,7 +269,7 @@ export const SnippetCard = ({
             onChange={(e) => handleFieldChange(index, 'label', e.target.value)}
             onBlur={handleFieldBlur}
             placeholder="Label..."
-            maxLength={50}
+            maxLength={LIMITS.FIELD_LABEL}
             className={cn(
               "h-6 flex-1 text-xs font-medium bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary px-1 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0",
               inDialog && "h-8 text-sm"
@@ -292,7 +294,7 @@ export const SnippetCard = ({
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             onBlur={handleFieldBlur}
             placeholder="Value..."
-            maxLength={10000}
+            maxLength={LIMITS.FIELD_VALUE}
             className={cn(
               "min-h-[60px] text-xs font-mono bg-muted/30 border-border/50 resize-y",
               inDialog && "min-h-[120px] text-sm"
@@ -305,7 +307,7 @@ export const SnippetCard = ({
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             onBlur={handleFieldBlur}
             placeholder="Value..."
-            maxLength={10000}
+            maxLength={LIMITS.FIELD_VALUE}
             className={cn(
               "h-8 text-xs font-mono bg-muted/30 border-border/50",
               inDialog && "h-10 text-sm"
@@ -355,7 +357,7 @@ export const SnippetCard = ({
                   onChange={handleTitleChange}
                   onBlur={handleTitleBlur}
                   placeholder="Snippet title..."
-                  maxLength={100}
+                  maxLength={LIMITS.SNIPPET_TITLE}
                   className="h-7 text-sm font-semibold bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary px-1 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               ) : (
@@ -435,7 +437,7 @@ export const SnippetCard = ({
               })
             )}
 
-            {isEditMode && (
+            {isEditMode && localFields.length < LIMITS.MAX_FIELDS_PER_SNIPPET && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -460,7 +462,7 @@ export const SnippetCard = ({
                     onChange={handleTitleChange}
                     onBlur={handleTitleBlur}
                     placeholder="Snippet title..."
-                    maxLength={100}
+                    maxLength={LIMITS.SNIPPET_TITLE}
                     className="text-lg font-semibold bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary px-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 ) : (
@@ -480,7 +482,7 @@ export const SnippetCard = ({
                 );
               })}
 
-              {isEditMode && (
+              {isEditMode && localFields.length < LIMITS.MAX_FIELDS_PER_SNIPPET && (
                 <Button
                   variant="ghost"
                   size="sm"
