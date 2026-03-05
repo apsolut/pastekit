@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { LIMITS } from '@/lib/constants';
 
 // Create New Project Modal
 export function CreateProjectModal({ open, onClose, onCreate }) {
@@ -57,7 +58,7 @@ export function CreateProjectModal({ open, onClose, onCreate }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Project name"
-            maxLength={50}
+            maxLength={LIMITS.PROJECT_NAME}
             autoFocus
           />
         </div>
@@ -117,7 +118,7 @@ export function RenameProjectModal({ open, onClose, project, onRename }) {
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Project name"
-            maxLength={50}
+            maxLength={LIMITS.PROJECT_NAME}
             autoFocus
           />
         </div>
