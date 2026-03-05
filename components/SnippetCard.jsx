@@ -31,6 +31,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import {
+  SNIPPET_TITLE_MAX_LENGTH,
+  FIELD_LABEL_MAX_LENGTH,
+  FIELD_VALUE_MAX_LENGTH
+} from '@/lib/constants';
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text', icon: Type },
