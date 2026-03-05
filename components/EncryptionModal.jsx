@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Lock, Shield, ShieldOff, Eye, EyeOff, AlertTriangle, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MASTER_PASSWORD_MAX_LENGTH } from '@/lib/constants';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +14,19 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { LIMITS } from '@/lib/constants';
+
+// Helper to validate password strength
+const validatePassword = (pw) => {
+  if (pw.length < LIMITS.MASTER_PASSWORD_MIN) {
+    return `Password must be at least ${LIMITS.MASTER_PASSWORD_MIN} characters`;
+  }
+  // Require at least 4 unique characters to prevent simple repetition like "123123123123"
+  const uniqueChars = new Set(pw).size;
+  if (uniqueChars < 4) {
+    return 'Password is too simple. Use a wider variety of characters.';
+  }
+  return null;
+};
 
 // Setup encryption for first time
 export function EncryptionSetupModal({ open, onClose, onSetup }) {
@@ -27,8 +39,9 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
   const handleSetup = async () => {
     setError('');
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+    const validationError = validatePassword(password);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -75,7 +88,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
           <div className="relative">
             <Input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Master password (min 8 characters)"
+              placeholder={`Master password (min ${LIMITS.MASTER_PASSWORD_MIN} chars)`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               maxLength={LIMITS.MASTER_PASSWORD}
@@ -355,8 +368,9 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
   const handleChange = async () => {
     setError('');
 
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+    const validationError = validatePassword(newPassword);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -419,7 +433,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
 
           <Input
             type={showPasswords ? 'text' : 'password'}
-            placeholder="New password (min 8 characters)"
+            placeholder={`New password (min ${LIMITS.MASTER_PASSWORD_MIN} chars)`}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             maxLength={LIMITS.MASTER_PASSWORD}

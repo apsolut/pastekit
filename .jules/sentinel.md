@@ -9,3 +9,8 @@
 **Vulnerability:** Missing input length limits on snippets and projects, leading to potential client-side DoS or memory exhaustion.
 **Learning:** In a client-side application where all data is kept in memory (and localStorage), excessively large inputs can degrade performance or crash the browser. Input validation must happen at both the UI level and during data ingestion (imports).
 **Prevention:** Implement `maxLength` on all user-facing inputs and enforce the same limits in JSON parsing/import logic to ensure data stays within safe bounds.
+
+## 2025-05-16 - Defense in Depth for Master Password Requirements
+**Vulnerability:** Weak master password requirements (8 characters) below modern security standards for cryptographic applications.
+**Learning:** Enforcing password strength in the UI is necessary for user experience, but must be complemented by enforcement at the cryptographic layer to prevent bypass. Centralizing these limits in a `LIMITS` object ensures consistency across the application.
+**Prevention:** Always use a centralized `LIMITS` constant for security-critical thresholds and implement validation in both the UI components and the core logic (e.g., crypto functions).
