@@ -25,7 +25,12 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
 import { cn } from '@/lib/utils';
-import { LIMITS } from '@/lib/constants';
+import {
+  PROJECT_NAME_MAX_LENGTH,
+  SNIPPET_TITLE_MAX_LENGTH,
+  FIELD_LABEL_MAX_LENGTH,
+  FIELD_VALUE_MAX_LENGTH
+} from '@/lib/constants';
 
 // Generate unique ID
 const generateId = () => crypto.randomUUID();
@@ -196,9 +201,10 @@ function HomeContent() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Security: Limit file size to prevent DoS
-    if (file.size > LIMITS.MAX_IMPORT_SIZE) {
-      showToast(`File too large (max ${LIMITS.MAX_IMPORT_SIZE / (1024 * 1024)}MB)`, 'error');
+    // Security: File size limit to prevent DoS
+    if (file.size > LIMITS.MAX_IMPORT_FILE_SIZE) {
+      showToast(`File too large (max ${LIMITS.MAX_IMPORT_FILE_SIZE / (1024 * 1024)}MB)`, 'error');
+      event.target.value = '';
       return;
     }
 
@@ -207,9 +213,22 @@ function HomeContent() {
       try {
         const imported = JSON.parse(e.target.result);
 
+        // Helper to sanitize snippets
+        const sanitizeSnippets = (snippets) => {
+          return snippets.map(snippet => ({
+            ...snippet,
+            title: (snippet.title || '').substring(0, SNIPPET_TITLE_MAX_LENGTH),
+            fields: (snippet.fields || []).map(field => ({
+              ...field,
+              label: (field.label || '').substring(0, FIELD_LABEL_MAX_LENGTH),
+              value: (field.value || '').substring(0, FIELD_VALUE_MAX_LENGTH)
+            }))
+          }));
+        };
+
         // Check if it's a full projects export (version 2 format)
         if (imported.version === 2 && Array.isArray(imported.projects)) {
-          // Resource limits
+          // Security: Limit number of projects
           if (imported.projects.length > LIMITS.MAX_PROJECTS) {
             showToast(`Too many projects (max ${LIMITS.MAX_PROJECTS})`, 'error');
             return;
@@ -224,6 +243,8 @@ function HomeContent() {
             if (!Array.isArray(project.snippets)) {
               return false;
             }
+
+            // Security: Limit snippets per project
             if (project.snippets.length > LIMITS.MAX_SNIPPETS_PER_PROJECT) return false;
 
             return project.snippets.every(snippet => {
@@ -234,6 +255,8 @@ function HomeContent() {
               if (!Array.isArray(snippet.fields)) {
                 return false;
               }
+
+              // Security: Limit fields per snippet
               if (snippet.fields.length > LIMITS.MAX_FIELDS_PER_SNIPPET) return false;
 
               return snippet.fields.every(field =>
@@ -252,10 +275,17 @@ function HomeContent() {
             return;
           }
 
+          // Sanitize projects
+          const sanitizedProjects = imported.projects.map(project => ({
+            ...project,
+            name: project.name.substring(0, PROJECT_NAME_MAX_LENGTH),
+            snippets: sanitizeSnippets(project.snippets)
+          }));
+
           // Import all projects
-          projectsCtx.setProjects(imported.projects);
-          projectsCtx.setActiveProjectId(imported.projects[0]?.id);
-          showToast(`Imported ${imported.projects.length} project${imported.projects.length !== 1 ? 's' : ''}!`, 'success');
+          projectsCtx.setProjects(sanitizedProjects);
+          projectsCtx.setActiveProjectId(sanitizedProjects[0]?.id);
+          showToast(`Imported ${sanitizedProjects.length} project${sanitizedProjects.length !== 1 ? 's' : ''}!`, 'success');
           return;
         }
 
@@ -265,7 +295,7 @@ function HomeContent() {
           return;
         }
 
-        // Resource limits for snippets
+        // Security: Limit snippets for legacy import
         if (imported.length > LIMITS.MAX_SNIPPETS_PER_PROJECT) {
           showToast(`Too many snippets (max ${LIMITS.MAX_SNIPPETS_PER_PROJECT})`, 'error');
           return;
@@ -280,6 +310,8 @@ function HomeContent() {
           if (!Array.isArray(snippet.fields)) {
             return false;
           }
+
+          // Security: Limit fields per snippet
           if (snippet.fields.length > LIMITS.MAX_FIELDS_PER_SNIPPET) return false;
 
           return snippet.fields.every(field =>
@@ -297,9 +329,11 @@ function HomeContent() {
           return;
         }
 
+        const sanitizedSnippets = sanitizeSnippets(imported);
+
         // Import into current project
-        updateActiveProjectSnippets(imported);
-        showToast(`Imported ${imported.length} snippet${imported.length !== 1 ? 's' : ''} into "${activeProject?.name}"!`, 'success');
+        updateActiveProjectSnippets(sanitizedSnippets);
+        showToast(`Imported ${sanitizedSnippets.length} snippet${sanitizedSnippets.length !== 1 ? 's' : ''} into "${activeProject?.name}"!`, 'success');
       } catch (err) {
         showToast('Failed to parse JSON file', 'error');
       }
