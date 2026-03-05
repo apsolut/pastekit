@@ -77,7 +77,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
               placeholder="Master password (min 8 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              maxLength={MASTER_PASSWORD_MAX_LENGTH}
+              maxLength={128}
               className="pr-10"
             />
             <button
@@ -94,7 +94,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            maxLength={MASTER_PASSWORD_MAX_LENGTH}
+            maxLength={128}
           />
 
           {error && (
@@ -204,7 +204,7 @@ export function EncryptionUnlockModal({ open, onUnlock }) {
               value={password}
               onChange={handlePasswordChange}
               onKeyDown={handleKeyDown}
-              maxLength={MASTER_PASSWORD_MAX_LENGTH}
+              maxLength={128}
               className="pr-10"
               autoFocus
             />
@@ -290,7 +290,7 @@ export function DisableEncryptionModal({ open, onClose, onDisable }) {
               placeholder="Current password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              maxLength={MASTER_PASSWORD_MAX_LENGTH}
+              maxLength={128}
               className="pr-10"
             />
             <button
@@ -400,7 +400,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
               placeholder="Current password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              maxLength={MASTER_PASSWORD_MAX_LENGTH}
+              maxLength={128}
               className="pr-10"
             />
             <button
@@ -417,7 +417,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
             placeholder="New password (min 8 characters)"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            maxLength={MASTER_PASSWORD_MAX_LENGTH}
+            maxLength={128}
           />
 
           <Input
@@ -425,7 +425,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
             placeholder="Confirm new password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            maxLength={MASTER_PASSWORD_MAX_LENGTH}
+            maxLength={128}
           />
 
           {error && (
