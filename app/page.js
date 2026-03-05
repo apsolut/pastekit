@@ -29,7 +29,8 @@ import {
   PROJECT_NAME_MAX_LENGTH,
   SNIPPET_TITLE_MAX_LENGTH,
   FIELD_LABEL_MAX_LENGTH,
-  FIELD_VALUE_MAX_LENGTH
+  FIELD_VALUE_MAX_LENGTH,
+  LIMITS
 } from '@/lib/constants';
 
 // Generate unique ID
