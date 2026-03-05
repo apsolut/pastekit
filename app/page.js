@@ -25,7 +25,12 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
 import { cn } from '@/lib/utils';
-import { LIMITS } from '@/lib/constants';
+import {
+  PROJECT_NAME_MAX_LENGTH,
+  SNIPPET_TITLE_MAX_LENGTH,
+  FIELD_LABEL_MAX_LENGTH,
+  FIELD_VALUE_MAX_LENGTH
+} from '@/lib/constants';
 
 // Generate unique ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -203,6 +208,19 @@ function HomeContent() {
       try {
         const imported = JSON.parse(e.target.result);
 
+        // Helper to sanitize snippets
+        const sanitizeSnippets = (snippets) => {
+          return snippets.map(snippet => ({
+            ...snippet,
+            title: (snippet.title || '').substring(0, SNIPPET_TITLE_MAX_LENGTH),
+            fields: (snippet.fields || []).map(field => ({
+              ...field,
+              label: (field.label || '').substring(0, FIELD_LABEL_MAX_LENGTH),
+              value: (field.value || '').substring(0, FIELD_VALUE_MAX_LENGTH)
+            }))
+          }));
+        };
+
         // Check if it's a full projects export (version 2 format)
         if (imported.version === 2 && Array.isArray(imported.projects)) {
           // Security: Limit number of projects
@@ -252,10 +270,17 @@ function HomeContent() {
             return;
           }
 
+          // Sanitize projects
+          const sanitizedProjects = imported.projects.map(project => ({
+            ...project,
+            name: project.name.substring(0, PROJECT_NAME_MAX_LENGTH),
+            snippets: sanitizeSnippets(project.snippets)
+          }));
+
           // Import all projects
-          projectsCtx.setProjects(imported.projects);
-          projectsCtx.setActiveProjectId(imported.projects[0]?.id);
-          showToast(`Imported ${imported.projects.length} project${imported.projects.length !== 1 ? 's' : ''}!`, 'success');
+          projectsCtx.setProjects(sanitizedProjects);
+          projectsCtx.setActiveProjectId(sanitizedProjects[0]?.id);
+          showToast(`Imported ${sanitizedProjects.length} project${sanitizedProjects.length !== 1 ? 's' : ''}!`, 'success');
           return;
         }
 
@@ -299,9 +324,11 @@ function HomeContent() {
           return;
         }
 
+        const sanitizedSnippets = sanitizeSnippets(imported);
+
         // Import into current project
-        updateActiveProjectSnippets(imported);
-        showToast(`Imported ${imported.length} snippet${imported.length !== 1 ? 's' : ''} into "${activeProject?.name}"!`, 'success');
+        updateActiveProjectSnippets(sanitizedSnippets);
+        showToast(`Imported ${sanitizedSnippets.length} snippet${sanitizedSnippets.length !== 1 ? 's' : ''} into "${activeProject?.name}"!`, 'success');
       } catch (err) {
         showToast('Failed to parse JSON file', 'error');
       }

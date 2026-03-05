@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Lock, Shield, ShieldOff, Eye, EyeOff, AlertTriangle, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MASTER_PASSWORD_MAX_LENGTH } from '@/lib/constants';
 import {
   Dialog,
   DialogContent,
