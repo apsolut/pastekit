@@ -34,7 +34,8 @@ import { cn } from '@/lib/utils';
 import {
   SNIPPET_TITLE_MAX_LENGTH,
   FIELD_LABEL_MAX_LENGTH,
-  FIELD_VALUE_MAX_LENGTH
+  FIELD_VALUE_MAX_LENGTH,
+  LIMITS
 } from '@/lib/constants';
 
 const FIELD_TYPES = [
