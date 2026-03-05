@@ -233,7 +233,7 @@ export function ProjectProvider({ children }) {
       updatedAt: now,
       snippets: projectToDuplicate.snippets.map(s => ({
         ...s,
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        id: crypto.randomUUID()
       }))
     };
 

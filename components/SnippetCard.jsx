@@ -150,6 +150,7 @@ export const SnippetCard = ({
   };
 
   const addField = () => {
+    if (localFields.length >= LIMITS.MAX_FIELDS_PER_SNIPPET) return;
     const newFields = [...localFields, { ...DEFAULT_FIELD }];
     setLocalFields(newFields);
     onUpdate(snippet.id, { fields: newFields });
@@ -440,7 +441,7 @@ export const SnippetCard = ({
               })
             )}
 
-            {isEditMode && (
+            {isEditMode && localFields.length < LIMITS.MAX_FIELDS_PER_SNIPPET && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -485,7 +486,7 @@ export const SnippetCard = ({
                 );
               })}
 
-              {isEditMode && (
+              {isEditMode && localFields.length < LIMITS.MAX_FIELDS_PER_SNIPPET && (
                 <Button
                   variant="ghost"
                   size="sm"

@@ -80,6 +80,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
               onChange={(e) => setPassword(e.target.value)}
               maxLength={LIMITS.MASTER_PASSWORD}
               className="pr-10"
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -208,6 +209,7 @@ export function EncryptionUnlockModal({ open, onUnlock }) {
               maxLength={LIMITS.MASTER_PASSWORD}
               className="pr-10"
               autoFocus
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -293,6 +295,7 @@ export function DisableEncryptionModal({ open, onClose, onDisable }) {
               onChange={(e) => setPassword(e.target.value)}
               maxLength={LIMITS.MASTER_PASSWORD}
               className="pr-10"
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -403,6 +406,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
               onChange={(e) => setCurrentPassword(e.target.value)}
               maxLength={LIMITS.MASTER_PASSWORD}
               className="pr-10"
+              autoComplete="current-password"
             />
             <button
               type="button"

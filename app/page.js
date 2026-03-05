@@ -33,7 +33,7 @@ import {
 } from '@/lib/constants';
 
 // Generate unique ID
-const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateId = () => crypto.randomUUID();
 
 function HomeContent() {
   // Theme management
@@ -105,6 +105,11 @@ function HomeContent() {
 
   // Add new snippet
   const handleAddSnippet = useCallback(() => {
+    if (snippets.length >= LIMITS.MAX_SNIPPETS_PER_PROJECT) {
+      showToast(`Maximum snippets per project reached (${LIMITS.MAX_SNIPPETS_PER_PROJECT})`, 'error');
+      return;
+    }
+
     const newSnippet = {
       id: generateId(),
       title: '',
@@ -120,7 +125,7 @@ function HomeContent() {
     }
 
     showToast('New snippet added!', 'success');
-  }, [updateActiveProjectSnippets, isEditMode, setIsEditMode, showToast]);
+  }, [updateActiveProjectSnippets, isEditMode, setIsEditMode, showToast, snippets.length]);
 
   // Update snippet
   const handleUpdateSnippet = useCallback((id, updates) => {
@@ -407,9 +412,13 @@ function HomeContent() {
 
   // Project handlers
   const handleCreateProject = useCallback((name) => {
+    if (projects.length >= LIMITS.MAX_PROJECTS) {
+      showToast(`Maximum number of projects reached (${LIMITS.MAX_PROJECTS})`, 'error');
+      return;
+    }
     const project = createProject(name);
     showToast(`Created project "${project.name}"`, 'success');
-  }, [createProject, showToast]);
+  }, [createProject, showToast, projects.length]);
 
   const handleRenameProject = useCallback((projectId, newName) => {
     updateProject(projectId, { name: newName });
@@ -426,13 +435,17 @@ function HomeContent() {
   }, [deleteProject, showToast]);
 
   const handleDuplicateProject = useCallback((projectId) => {
+    if (projects.length >= LIMITS.MAX_PROJECTS) {
+      showToast(`Maximum number of projects reached (${LIMITS.MAX_PROJECTS})`, 'error');
+      return;
+    }
     const result = duplicateProject(projectId);
     if (result.success) {
       showToast(`Duplicated project as "${result.project.name}"`, 'success');
     } else {
       showToast(result.error, 'error');
     }
-  }, [duplicateProject, showToast]);
+  }, [duplicateProject, showToast, projects.length]);
 
   const handleSwitchProject = useCallback((projectId) => {
     const result = switchProject(projectId);
