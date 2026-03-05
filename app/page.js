@@ -202,9 +202,7 @@ function HomeContent() {
             if (!project || typeof project.id !== 'string' || typeof project.name !== 'string') {
               return false;
             }
-            // Security: limit project name length
             if (project.name.length > 50) return false;
-
             if (!Array.isArray(project.snippets)) {
               return false;
             }
@@ -212,9 +210,7 @@ function HomeContent() {
               if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
                 return false;
               }
-              // Security: limit snippet title length
               if (snippet.title.length > 100) return false;
-
               if (!Array.isArray(snippet.fields)) {
                 return false;
               }
@@ -223,7 +219,6 @@ function HomeContent() {
                 typeof field.label === 'string' &&
                 typeof field.value === 'string' &&
                 ['text', 'password', 'rich'].includes(field.type) &&
-                // Security: limit field labels and values
                 field.label.length <= 50 &&
                 field.value.length <= 10000
               );
@@ -253,9 +248,7 @@ function HomeContent() {
           if (!snippet || typeof snippet.id !== 'string' || typeof snippet.title !== 'string') {
             return false;
           }
-          // Security: limit snippet title length
           if (snippet.title.length > 100) return false;
-
           if (!Array.isArray(snippet.fields)) {
             return false;
           }
@@ -264,7 +257,6 @@ function HomeContent() {
             typeof field.label === 'string' &&
             typeof field.value === 'string' &&
             ['text', 'password', 'rich'].includes(field.type) &&
-            // Security: limit field labels and values
             field.label.length <= 50 &&
             field.value.length <= 10000
           );
