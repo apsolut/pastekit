@@ -9,3 +9,8 @@
 **Vulnerability:** Missing input length limits on snippets and projects, leading to potential client-side DoS or memory exhaustion.
 **Learning:** In a client-side application where all data is kept in memory (and localStorage), excessively large inputs can degrade performance or crash the browser. Input validation must happen at both the UI level and during data ingestion (imports).
 **Prevention:** Implement `maxLength` on all user-facing inputs and enforce the same limits in JSON parsing/import logic to ensure data stays within safe bounds.
+
+## 2025-05-16 - Tiered Password Validation for Defense in Depth
+**Vulnerability:** Risk of users choosing weak master passwords, undermining the security of XSalsa20-Poly1305 encryption.
+**Learning:** Security standards evolve faster than user habits. Enforcing a new, higher minimum length (12 chars) in the UI while maintaining a lower "legacy" minimum (8 chars) in the crypto library allows for improved security for new users without locking out existing ones.
+**Prevention:** Always implement a tiered validation approach: strict in the UI for new data/actions, and defense-in-depth in the core logic that preserves backward compatibility for existing data.
