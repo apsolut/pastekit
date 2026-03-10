@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Lock, Shield, ShieldOff, Eye, EyeOff, AlertTriangle, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MASTER_PASSWORD_MAX_LENGTH } from '@/lib/constants';
 import {
   Dialog,
   DialogContent,
@@ -27,8 +26,13 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
   const handleSetup = async () => {
     setError('');
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+    if (password.length < LIMITS.MASTER_PASSWORD_MIN) {
+      setError(`Password must be at least ${LIMITS.MASTER_PASSWORD_MIN} characters`);
+      return;
+    }
+
+    if (new Set(password).size < 4) {
+      setError('Password must contain at least 4 unique characters');
       return;
     }
 
@@ -75,7 +79,7 @@ export function EncryptionSetupModal({ open, onClose, onSetup }) {
           <div className="relative">
             <Input
               type={showPassword ? 'text' : 'password'}
-              placeholder="Master password (min 8 characters)"
+              placeholder={`Master password (min ${LIMITS.MASTER_PASSWORD_MIN} characters)`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               maxLength={LIMITS.MASTER_PASSWORD}
@@ -355,8 +359,13 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
   const handleChange = async () => {
     setError('');
 
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+    if (newPassword.length < LIMITS.MASTER_PASSWORD_MIN) {
+      setError(`New password must be at least ${LIMITS.MASTER_PASSWORD_MIN} characters`);
+      return;
+    }
+
+    if (new Set(newPassword).size < 4) {
+      setError('New password must contain at least 4 unique characters');
       return;
     }
 
@@ -419,7 +428,7 @@ export function ChangePasswordModal({ open, onClose, onChange }) {
 
           <Input
             type={showPasswords ? 'text' : 'password'}
-            placeholder="New password (min 8 characters)"
+            placeholder={`New password (min ${LIMITS.MASTER_PASSWORD_MIN} characters)`}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             maxLength={LIMITS.MASTER_PASSWORD}
