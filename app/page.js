@@ -25,13 +25,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/hooks/useTheme';
 import { defaultSnippets } from '@/data/defaultSnippets';
 import { cn } from '@/lib/utils';
-import {
-  PROJECT_NAME_MAX_LENGTH,
-  SNIPPET_TITLE_MAX_LENGTH,
-  FIELD_LABEL_MAX_LENGTH,
-  FIELD_VALUE_MAX_LENGTH,
-  LIMITS
-} from '@/lib/constants';
+import { LIMITS } from '@/lib/constants';
 
 // Generate unique ID
 const generateId = () => crypto.randomUUID();
@@ -218,11 +212,11 @@ function HomeContent() {
         const sanitizeSnippets = (snippets) => {
           return snippets.map(snippet => ({
             ...snippet,
-            title: (snippet.title || '').substring(0, SNIPPET_TITLE_MAX_LENGTH),
+            title: (snippet.title || '').substring(0, LIMITS.SNIPPET_TITLE),
             fields: (snippet.fields || []).map(field => ({
               ...field,
-              label: (field.label || '').substring(0, FIELD_LABEL_MAX_LENGTH),
-              value: (field.value || '').substring(0, FIELD_VALUE_MAX_LENGTH)
+              label: (field.label || '').substring(0, LIMITS.FIELD_LABEL),
+              value: (field.value || '').substring(0, LIMITS.FIELD_VALUE)
             }))
           }));
         };
@@ -279,7 +273,7 @@ function HomeContent() {
           // Sanitize projects
           const sanitizedProjects = imported.projects.map(project => ({
             ...project,
-            name: project.name.substring(0, PROJECT_NAME_MAX_LENGTH),
+          name: project.name.substring(0, LIMITS.PROJECT_NAME),
             snippets: sanitizeSnippets(project.snippets)
           }));
 
