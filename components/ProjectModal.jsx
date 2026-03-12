@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Folder, Copy, Trash2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PROJECT_NAME_MAX_LENGTH } from '@/lib/constants';
 import {
   Dialog,
   DialogContent,
